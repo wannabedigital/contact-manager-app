@@ -1,6 +1,6 @@
-export type PhoneType = 'mobile' | 'work' | 'home' | 'other';
-export type EmailType = 'personal' | 'work' | 'other';
-export type AddressType = 'home' | 'work' | 'other';
+export type PhoneType = 'Мобильный' | 'Рабочий' | 'Домашний' | 'другой';
+export type EmailType = 'Личный' | 'Рабочий' | 'Другой';
+export type AddressType = 'Домашний' | 'Рабочий' | 'Другой';
 
 export interface Phone {
   id: number;

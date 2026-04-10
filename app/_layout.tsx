@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { runMigrations } from '../src/database/migrations'; // 👈 Имя должно совпадать с экспортом
+import { runMigrations } from '../src/database/migrations';
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);

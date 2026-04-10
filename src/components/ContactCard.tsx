@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors } from '../constants/colors';
 import { Contact } from '../types/contact';
 
 type Props = {
@@ -37,10 +38,10 @@ export const ContactCard = ({ contact, onDelete }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: 12,
+    padding: 16,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: colors.divider,
   },
 
   avatar: {
@@ -48,10 +49,10 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#2F80ED',
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
 
   info: {
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
 
   company: {
-    fontSize: 13,
-    color: '#777',
+    fontSize: 14,
+    color: colors.textPrimary,
   },
 
   actions: {

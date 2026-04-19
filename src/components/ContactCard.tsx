@@ -9,10 +9,13 @@ type Props = {
 };
 
 export const ContactCard = ({ contact, onDelete }: Props) => {
+  const hasPhones = contact.phones && contact.phones.length > 0;
+  const hasEmails = contact.emails && contact.emails.length > 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.avatar}>
-        <Ionicons name='person-outline' size={32} color='#2F80ED' />
+        <Ionicons name='person-outline' size={32} color={colors.primary} />
       </View>
 
       <View style={styles.info}>
@@ -23,13 +26,16 @@ export const ContactCard = ({ contact, onDelete }: Props) => {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity>
-          <Ionicons name='mail-outline' size={22} color='#2F80ED' />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={{ marginLeft: 12 }}>
-          <Ionicons name='call-outline' size={22} color='#2F80ED' />
-        </TouchableOpacity>
+        {hasEmails && (
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name='mail-outline' size={32} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+        {hasPhones && (
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name='call-outline' size={32} color={colors.primary} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -40,8 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: colors.divider,
+    backgroundColor: colors.surface,
   },
 
   avatar: {
@@ -60,16 +65,26 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
+    color: colors.textPrimary,
   },
 
   company: {
     fontSize: 14,
-    color: colors.textPrimary,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 
   actions: {
     flexDirection: 'row',
+    gap: 24,
+  },
+
+  actionButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

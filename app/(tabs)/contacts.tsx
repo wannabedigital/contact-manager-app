@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import {
   FlatList,
@@ -46,13 +47,7 @@ export default function ContactsScreen() {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() =>
-          addContact({
-            first_name: 'Имя',
-            last_name: 'Контакта',
-            company: 'Организация',
-          })
-        }
+        onPress={() => router.push('/new-contact')}
       >
         <Ionicons name='add' size={28} color='#fff' />
       </TouchableOpacity>

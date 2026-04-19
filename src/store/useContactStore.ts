@@ -29,10 +29,17 @@ export const useContactStore = create<State>((set) => ({
   },
 
   addContact: async (contact) => {
+    console.log('🗄️ [store] addContact вызван с данными:', contact);
     try {
+      console.log('🗄️ [store] Вызов contactRepo.create...');
       await contactRepo.create(contact);
+      console.log(
+        '🗄️ [store] contactRepo.create завершён, обновляем список...',
+      );
       await useContactStore.getState().loadContacts();
+      console.log('🗄️ [store] Список контактов обновлён');
     } catch (err) {
+      console.error('🗄️ [store] Ошибка в addContact:', err);
       set({ error: (err as Error).message });
     }
   },

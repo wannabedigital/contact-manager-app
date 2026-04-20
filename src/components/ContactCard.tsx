@@ -1,9 +1,10 @@
+import { colors } from '@/src/constants/colors';
+import { Contact } from '@/src/types/contact';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors } from '../constants/colors';
-import { Contact } from '../types/contact';
+import { useRouter } from 'expo-router';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   contact: Contact;
@@ -11,6 +12,7 @@ type Props = {
 
 export const ContactCard = ({ contact }: Props) => {
   const { showActionSheetWithOptions } = useActionSheet();
+  const router = useRouter();
 
   const handlePhonePress = () => {
     const phones = contact.phones?.filter((p) => p.phone_number.trim()) || [];
@@ -70,13 +72,28 @@ export const ContactCard = ({ contact }: Props) => {
     }
   };
 
+  const handleCardPress = () => {
+    router.push(`/contact/${contact.id}`);
+  };
+
   const hasPhones = contact.phones && contact.phones.length > 0;
   const hasEmails = contact.emails && contact.emails.length > 0;
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handleCardPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.avatar}>
-        <Ionicons name='person-outline' size={32} color={colors.primary} />
+        {contact.photo_uri ? (
+          <Image
+            source={{ uri: contact.photo_uri }}
+            style={styles.avatarImage}
+          />
+        ) : (
+          <Ionicons name='person-outline' size={36} color={colors.primary} />
+        )}
       </View>
 
       <View style={styles.info}>
@@ -90,7 +107,10 @@ export const ContactCard = ({ contact }: Props) => {
         {hasEmails && (
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={handleEmailPress}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleEmailPress();
+            }}
           >
             <Ionicons name='mail-outline' size={32} color={colors.primary} />
           </TouchableOpacity>
@@ -98,13 +118,16 @@ export const ContactCard = ({ contact }: Props) => {
         {hasPhones && (
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={handlePhonePress}
+            onPress={(e) => {
+              e.stopPropagation();
+              handlePhonePress();
+            }}
           >
             <Ionicons name='call-outline' size={32} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -117,14 +140,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 2,
     borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   info: {
     flex: 1,

@@ -279,7 +279,7 @@ export default function NewContactScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Новый контакт</Text>
           <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
-            <Ionicons name='checkmark' size={28} color={colors.primary} />
+            <Ionicons name='checkmark' size={28} color={colors.success} />
           </TouchableOpacity>
         </View>
 

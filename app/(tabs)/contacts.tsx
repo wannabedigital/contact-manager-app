@@ -49,7 +49,7 @@ export default function ContactsScreen() {
         style={styles.fab}
         onPress={() => router.push('/new-contact')}
       >
-        <Ionicons name='add' size={28} color='#fff' />
+        <Ionicons name='add' size={28} color={colors.surface} />
       </TouchableOpacity>
     </View>
   );

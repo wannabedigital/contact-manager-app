@@ -1,14 +1,75 @@
-import { colors } from '@/src/constants/colors';
-import { Contact } from '@/src/types/contact';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors } from '../constants/colors';
+import { Contact } from '../types/contact';
 
 type Props = {
   contact: Contact;
-  onDelete?: () => void;
 };
 
-export const ContactCard = ({ contact, onDelete }: Props) => {
+export const ContactCard = ({ contact }: Props) => {
+  const { showActionSheetWithOptions } = useActionSheet();
+
+  const handlePhonePress = () => {
+    const phones = contact.phones?.filter((p) => p.phone_number.trim()) || [];
+    if (phones.length === 0) return;
+
+    if (phones.length === 1) {
+      const number = phones[0].phone_number.replace(/\D/g, '');
+      Linking.openURL(`tel:${number}`);
+    } else {
+      const options = [
+        ...phones.map((p) => `${p.phone_number} (${p.type})`),
+        'Отмена',
+      ];
+      const cancelButtonIndex = options.length - 1;
+
+      showActionSheetWithOptions(
+        { options, cancelButtonIndex, title: 'Выберите номер' },
+        (selectedIndex) => {
+          if (
+            selectedIndex !== undefined &&
+            selectedIndex !== cancelButtonIndex
+          ) {
+            const phone = phones[selectedIndex];
+            const number = phone.phone_number.replace(/\D/g, '');
+            Linking.openURL(`tel:${number}`);
+          }
+        },
+      );
+    }
+  };
+
+  const handleEmailPress = () => {
+    const emails = contact.emails?.filter((e) => e.email_address.trim()) || [];
+    if (emails.length === 0) return;
+
+    if (emails.length === 1) {
+      Linking.openURL(`mailto:${emails[0].email_address}`);
+    } else {
+      const options = [
+        ...emails.map((e) => `${e.email_address} (${e.type})`),
+        'Отмена',
+      ];
+      const cancelButtonIndex = options.length - 1;
+
+      showActionSheetWithOptions(
+        { options, cancelButtonIndex, title: 'Выберите email' },
+        (selectedIndex) => {
+          if (
+            selectedIndex !== undefined &&
+            selectedIndex !== cancelButtonIndex
+          ) {
+            const email = emails[selectedIndex];
+            Linking.openURL(`mailto:${email.email_address}`);
+          }
+        },
+      );
+    }
+  };
+
   const hasPhones = contact.phones && contact.phones.length > 0;
   const hasEmails = contact.emails && contact.emails.length > 0;
 
@@ -27,12 +88,18 @@ export const ContactCard = ({ contact, onDelete }: Props) => {
 
       <View style={styles.actions}>
         {hasEmails && (
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleEmailPress}
+          >
             <Ionicons name='mail-outline' size={32} color={colors.primary} />
           </TouchableOpacity>
         )}
         {hasPhones && (
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handlePhonePress}
+          >
             <Ionicons name='call-outline' size={32} color={colors.primary} />
           </TouchableOpacity>
         )}
@@ -47,43 +114,38 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     backgroundColor: colors.surface,
+    borderRadius: 8,
   },
-
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 2,
     borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-
   info: {
     flex: 1,
   },
-
   name: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
   },
-
   company: {
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 2,
   },
-
   actions: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 16,
   },
-
   actionButton: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },

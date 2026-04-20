@@ -1,5 +1,6 @@
 import { getDatabase } from '@/src/database/database';
 import { runMigrations } from '@/src/database/migrations';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 
@@ -23,5 +24,9 @@ export default function RootLayout() {
 
   if (!ready) return null;
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <ActionSheetProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </ActionSheetProvider>
+  );
 }

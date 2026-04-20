@@ -1,14 +1,11 @@
 {
   "expo": {
-    "name": "Contact Manager",
+    "name": "Контактный менеджер",
     "slug": "contact-manager-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
-    "scheme": "contactmanager",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,11 +13,15 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.wannabevirtual.contactmanager"
+      "package": "com.wannabevirtual.contactmanager",
+      "versionCode": 1,
+      "permissions": [
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -29,6 +30,14 @@
     "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }

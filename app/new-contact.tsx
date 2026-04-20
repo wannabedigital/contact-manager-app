@@ -196,7 +196,7 @@ export default function NewContactScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={'padding'}
-      keyboardVerticalOffset={64}
+      keyboardVerticalOffset={0}
     >
       <View style={styles.container}>
         <View style={styles.header}>

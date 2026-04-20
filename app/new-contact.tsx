@@ -147,6 +147,28 @@ export default function NewContactScreen() {
       return;
     }
 
+    for (const phone of phones) {
+      if (phone.phone_number.trim() && !validatePhone(phone.phone_number)) {
+        Alert.alert(
+          'Ошибка',
+          `Неверный формат телефона: ${phone.phone_number}`,
+        );
+        return;
+      }
+    }
+
+    for (const email of emails) {
+      if (email.email_address.trim() && !validateEmail(email.email_address)) {
+        Alert.alert('Ошибка', `Неверный формат email: ${email.email_address}`);
+        return;
+      }
+    }
+
+    if (dateOfBirth && !validateDate(dateOfBirth)) {
+      Alert.alert('Ошибка', 'Неверный формат даты. Используйте ДД.ММ.ГГГГ');
+      return;
+    }
+
     const contactData = {
       first_name: firstName.trim(),
       last_name: lastName.trim() || undefined,
@@ -187,6 +209,61 @@ export default function NewContactScreen() {
 
   const handleCancel = () => {
     router.back();
+  };
+
+  const formatPhone = (value: string): string => {
+    const digits = value.replace(/\D/g, ''); // только цифры
+
+    if (!digits) return '';
+    if (digits[0] === '8') return formatPhone('7' + digits.slice(1)); // 8 → 7
+
+    let formatted = '+7';
+    if (digits.length > 1) formatted += ' (' + digits.slice(1, 4);
+    if (digits.length >= 5) formatted += ') ' + digits.slice(4, 7);
+    if (digits.length >= 8) formatted += '-' + digits.slice(7, 9);
+    if (digits.length >= 10) formatted += '-' + digits.slice(9, 11);
+
+    return formatted;
+  };
+
+  const validatePhone = (value: string): boolean => {
+    const digits = value.replace(/\D/g, '');
+    return digits.length === 11 && digits[0] === '7';
+  };
+
+  const formatDate = (value: string): string => {
+    const digits = value.replace(/\D/g, '');
+
+    let formatted = '';
+    if (digits.length > 0) formatted += digits.slice(0, 2);
+    if (digits.length >= 3) formatted += '.' + digits.slice(2, 4);
+    if (digits.length >= 5) formatted += '.' + digits.slice(4, 8);
+
+    return formatted;
+  };
+
+  const validateDate = (value: string): boolean => {
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(value)) return false;
+    const [day, month, year] = value.split('.').map(Number);
+    const date = new Date(year, month - 1, day);
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    );
+  };
+
+  const validateEmail = (value: string): boolean => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(value);
+  };
+
+  const updatePhoneFormatted = (id: string, value: string) => {
+    updatePhone(id, 'phone_number', formatPhone(value));
+  };
+
+  const updateDateFormatted = (value: string) => {
+    setDateOfBirth(formatDate(value));
   };
 
   return (
@@ -300,9 +377,11 @@ export default function NewContactScreen() {
               <TextInput
                 style={getInputStyle('dateOfBirth')}
                 value={dateOfBirth}
-                onChangeText={setDateOfBirth}
+                onChangeText={updateDateFormatted}
                 placeholder='ДД.ММ.ГГГГ'
                 placeholderTextColor={colors.textSecondary}
+                keyboardType='numeric'
+                maxLength={10}
                 onFocus={() => setFocusedField('dateOfBirth')}
                 onBlur={() => setFocusedField(null)}
               />
@@ -321,11 +400,12 @@ export default function NewContactScreen() {
                     ]}
                     value={phone.phone_number}
                     onChangeText={(value) =>
-                      updatePhone(phone.id, 'phone_number', value)
-                    }
+                      updatePhoneFormatted(phone.id, value)
+                    } // 👈 обёртка
                     placeholder='+7 (999) 888-77-66'
                     placeholderTextColor={colors.textSecondary}
                     keyboardType='phone-pad'
+                    maxLength={18}
                     onFocus={() => setFocusedField(`phone_${phone.id}`)}
                     onBlur={() => setFocusedField(null)}
                   />
@@ -333,7 +413,11 @@ export default function NewContactScreen() {
                     onPress={() => removePhone(phone.id)}
                     style={styles.deleteButton}
                   >
-                    <Ionicons name='trash-outline' size={20} color='#F44336' />
+                    <Ionicons
+                      name='trash-outline'
+                      size={20}
+                      color={colors.error}
+                    />
                   </TouchableOpacity>
                 </View>
                 <ScrollView

@@ -17,7 +17,7 @@ export default function ContactsScreen() {
 
   useEffect(() => {
     loadContacts();
-  }, []);
+  }, [loadContacts]);
 
   return (
     <View style={styles.container}>

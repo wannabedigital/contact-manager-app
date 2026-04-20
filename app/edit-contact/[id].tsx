@@ -227,7 +227,7 @@ export default function EditContactScreen() {
       phones: phones
         .filter((p) => p.phone_number.trim())
         .map((p) => ({
-          phone_number: p.phone_number.trim(),
+          phone_number: sanitizePhone(p.phone_number),
           type: p.type,
         })),
       emails: emails
@@ -257,21 +257,16 @@ export default function EditContactScreen() {
     router.back();
   };
 
-  const formatPhone = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
-    if (!digits) return '';
-    if (digits[0] === '8') return formatPhone('7' + digits.slice(1));
-    let formatted = '+7';
-    if (digits.length > 1) formatted += ' (' + digits.slice(1, 4);
-    if (digits.length >= 5) formatted += ') ' + digits.slice(4, 7);
-    if (digits.length >= 8) formatted += '-' + digits.slice(7, 9);
-    if (digits.length >= 10) formatted += '-' + digits.slice(9, 11);
-    return formatted;
+  const sanitizePhone = (value: string): string => {
+    return value.replace(/\D/g, '');
   };
 
   const validatePhone = (value: string): boolean => {
+    const allowedChars = /^[0-9+\-() ]*$/;
+    if (!allowedChars.test(value)) return false;
+
     const digits = value.replace(/\D/g, '');
-    return digits.length === 11 && digits[0] === '7';
+    return digits.length > 0 && digits.length <= 15;
   };
 
   const formatDate = (value: string): string => {
@@ -297,10 +292,6 @@ export default function EditContactScreen() {
   const validateEmail = (value: string): boolean => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(value);
-  };
-
-  const updatePhoneFormatted = (id: string, value: string) => {
-    updatePhone(id, 'phone_number', formatPhone(value));
   };
 
   const updateDateFormatted = (value: string) => {
@@ -458,12 +449,11 @@ export default function EditContactScreen() {
                     ]}
                     value={phone.phone_number}
                     onChangeText={(value) =>
-                      updatePhoneFormatted(phone.id, value)
+                      updatePhone(phone.id, 'phone_number', value)
                     }
                     placeholder='+7 (999) 888-77-66'
                     placeholderTextColor={colors.textSecondary}
                     keyboardType='phone-pad'
-                    maxLength={18}
                     onFocus={() => setFocusedField(`phone_${phone.id}`)}
                     onBlur={() => setFocusedField(null)}
                   />

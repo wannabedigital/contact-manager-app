@@ -179,8 +179,8 @@ export default function ContactDetailScreen() {
         >
           <Ionicons name='arrow-back' size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {contact.first_name} {contact.last_name || 'Контакт'}
+        <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode='tail'>
+          {contact.first_name} {contact.last_name || ''}
         </Text>
         <TouchableOpacity
           onPress={() => router.push(`/edit-contact/${contact.id}`)}
@@ -384,6 +384,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: colors.textPrimary,
+    paddingHorizontal: 16,
   },
   scrollView: {
     flex: 1,

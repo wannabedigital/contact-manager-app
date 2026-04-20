@@ -4,17 +4,24 @@
     "slug": "contact-manager-app",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./src/assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "scheme": "contactmanager",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "com.wannabevirtual.contactmanager",
       "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/icon.png",
+        "backgroundColor": "#2F80ED"
+      },
       "permissions": [
         "READ_CONTACTS",
         "WRITE_CONTACTS",
@@ -36,7 +43,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": ""
+        "projectId": "808d77bf-5e60-4a15-93a9-c618892fdcad"
       }
     }
   }

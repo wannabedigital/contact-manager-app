@@ -12,7 +12,7 @@ export default function RootLayout() {
         await runMigrations();
         await getDatabase();
       } catch (error) {
-        console.error('❌ Ошибка инициализации БД:', error);
+        console.error('Ошибка инициализации БД:', error);
       } finally {
         setReady(true);
       }

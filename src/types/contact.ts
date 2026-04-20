@@ -1,4 +1,4 @@
-export type PhoneType = 'Мобильный' | 'Рабочий' | 'Домашний' | 'другой';
+export type PhoneType = 'Мобильный' | 'Рабочий' | 'Домашний' | 'Другой';
 export type EmailType = 'Личный' | 'Рабочий' | 'Другой';
 export type AddressType = 'Домашний' | 'Рабочий' | 'Другой';
 

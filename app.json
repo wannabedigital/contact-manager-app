@@ -13,7 +13,8 @@
     },
     "scheme": "contactmanager",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wannabevirtual.contactmanager"
     },
     "android": {
       "package": "com.wannabevirtual.contactmanager",
@@ -34,7 +35,9 @@
       "bundler": "metro",
       "output": "static"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },

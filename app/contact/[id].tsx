@@ -155,7 +155,7 @@ export default function ContactDetailScreen() {
           onPress: async () => {
             try {
               await deleteContact(contact.id);
-              router.back(); // Возврат на список контактов
+              router.back();
             } catch (error) {
               console.error('Ошибка при удалении:', error);
               Alert.alert('Ошибка', 'Не удалось удалить контакт');

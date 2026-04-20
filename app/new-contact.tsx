@@ -212,10 +212,10 @@ export default function NewContactScreen() {
   };
 
   const formatPhone = (value: string): string => {
-    const digits = value.replace(/\D/g, ''); // только цифры
+    const digits = value.replace(/\D/g, '');
 
     if (!digits) return '';
-    if (digits[0] === '8') return formatPhone('7' + digits.slice(1)); // 8 → 7
+    if (digits[0] === '8') return formatPhone('7' + digits.slice(1));
 
     let formatted = '+7';
     if (digits.length > 1) formatted += ' (' + digits.slice(1, 4);
@@ -482,7 +482,11 @@ export default function NewContactScreen() {
                     onPress={() => removeEmail(email.id)}
                     style={styles.deleteButton}
                   >
-                    <Ionicons name='trash-outline' size={20} color='#F44336' />
+                    <Ionicons
+                      name='trash-outline'
+                      size={20}
+                      color={colors.error}
+                    />
                   </TouchableOpacity>
                 </View>
                 <ScrollView
@@ -762,7 +766,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   dropdownItemTextActive: {
-    color: '#FFFFFF',
+    color: colors.surface,
   },
   addButton: {
     flexDirection: 'row',

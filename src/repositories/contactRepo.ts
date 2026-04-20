@@ -1,5 +1,11 @@
-import { getDatabase } from '../database/database';
-import { Address, Contact, ContactInput, Email, Phone } from '../types/contact';
+import { getDatabase } from '@/src/database/database';
+import {
+  Address,
+  Contact,
+  ContactInput,
+  Email,
+  Phone,
+} from '@/src/types/contact';
 
 export const contactRepo = {
   async getAll(): Promise<Contact[]> {
@@ -50,13 +56,9 @@ export const contactRepo = {
     return contact;
   },
 
-  // Теперь принимает строго ContactInput
   async create(contact: ContactInput): Promise<number> {
-    console.log('🗄️ [repo] create вызван');
     const db = await getDatabase();
     const { phones, emails, addresses, ...core } = contact;
-
-    console.log('🗄️ [repo] Вставка в contacts:', core);
 
     const result = await db.runAsync(
       'INSERT INTO contacts (first_name, last_name, patronymic, company, position, date_of_birth, notes, photo_uri) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -71,7 +73,6 @@ export const contactRepo = {
     );
 
     const contactId = result.lastInsertRowId as number;
-    console.log('🗄️ [repo] Контакт создан с id:', contactId);
 
     if (phones?.length) {
       for (const p of phones) {

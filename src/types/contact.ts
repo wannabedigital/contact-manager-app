@@ -1,6 +1,15 @@
-export type PhoneType = 'Мобильный' | 'Рабочий' | 'Домашний' | 'Другой';
-export type EmailType = 'Личный' | 'Рабочий' | 'Другой';
-export type AddressType = 'Домашний' | 'Рабочий' | 'Другой';
+export const PHONE_TYPES = [
+  'Мобильный',
+  'Рабочий',
+  'Домашний',
+  'Другой',
+] as const;
+export const EMAIL_TYPES = ['Личный', 'Рабочий', 'Другой'] as const;
+export const ADDRESS_TYPES = ['Домашний', 'Рабочий', 'Другой'] as const;
+
+export type PhoneType = (typeof PHONE_TYPES)[number];
+export type EmailType = (typeof EMAIL_TYPES)[number];
+export type AddressType = (typeof ADDRESS_TYPES)[number];
 
 export interface Phone {
   id: number;

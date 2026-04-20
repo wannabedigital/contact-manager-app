@@ -1,3 +1,6 @@
+import { ContactCard } from '@/src/components/ContactCard';
+import { colors } from '@/src/constants/colors';
+import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
@@ -8,12 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ContactCard } from '../../src/components/ContactCard';
-import { colors } from '../../src/constants/colors';
-import { useContactStore } from '../../src/store/useContactStore';
 
 export default function ContactsScreen() {
-  const { contacts, loadContacts, addContact } = useContactStore();
+  const { contacts, loadContacts } = useContactStore();
 
   useEffect(() => {
     loadContacts();
@@ -42,7 +42,7 @@ export default function ContactsScreen() {
         keyExtractor={(item) => item.id!.toString()}
         renderItem={({ item }) => <ContactCard contact={item} />}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />} // ДОБАВЛЕНО
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
 
       <TouchableOpacity

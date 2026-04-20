@@ -1,7 +1,7 @@
+import { colors } from '@/src/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { colors } from '../../src/constants/colors';
 
 export default function TabsLayout() {
   return (

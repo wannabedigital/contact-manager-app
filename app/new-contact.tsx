@@ -1,3 +1,13 @@
+import { colors } from '@/src/constants/colors';
+import { useContactStore } from '@/src/store/useContactStore';
+import {
+  ADDRESS_TYPES,
+  AddressType,
+  EMAIL_TYPES,
+  EmailType,
+  PHONE_TYPES,
+  PhoneType,
+} from '@/src/types/contact';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -13,9 +23,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { colors } from '../src/constants/colors';
-import { useContactStore } from '../src/store/useContactStore';
-import { AddressType, EmailType, PhoneType } from '../src/types/contact';
 
 type PhoneField = {
   id: string;
@@ -86,7 +93,7 @@ export default function NewContactScreen() {
   const addPhone = () => {
     setPhones([
       ...phones,
-      { id: Date.now().toString(), phone_number: '', type: 'Мобильный' },
+      { id: Date.now().toString(), phone_number: '', type: PHONE_TYPES[0] },
     ]);
   };
 
@@ -101,7 +108,7 @@ export default function NewContactScreen() {
   const addEmail = () => {
     setEmails([
       ...emails,
-      { id: Date.now().toString(), email_address: '', type: 'Личный' },
+      { id: Date.now().toString(), email_address: '', type: EMAIL_TYPES[0] },
     ]);
   };
 
@@ -116,7 +123,7 @@ export default function NewContactScreen() {
   const addAddress = () => {
     setAddresses([
       ...addresses,
-      { id: Date.now().toString(), address: '', type: 'Домашний' },
+      { id: Date.now().toString(), address: '', type: ADDRESS_TYPES[0] },
     ]);
   };
 
@@ -135,16 +142,10 @@ export default function NewContactScreen() {
   };
 
   const handleSave = async () => {
-    console.log('🔍 handleSave вызвана');
-    console.log('📝 firstName:', firstName);
-
     if (!firstName.trim()) {
-      console.log('❌ Валидация не прошла: имя пустое');
       Alert.alert('Ошибка', 'Поле "Имя" обязательно для заполнения');
       return;
     }
-
-    console.log('✅ Валидация прошла, формируем данные...');
 
     const contactData = {
       first_name: firstName.trim(),
@@ -176,11 +177,7 @@ export default function NewContactScreen() {
     };
 
     try {
-      console.log('Вызов addContact из store...');
       await addContact(contactData);
-      console.log('addContact завершён');
-
-      console.log('Возврат на экран контактов...');
       router.back();
     } catch (error) {
       console.error('Ошибка при сохранении:', error);
@@ -344,14 +341,7 @@ export default function NewContactScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.dropdown}
                 >
-                  {(
-                    [
-                      'Мобильный',
-                      'Рабочий',
-                      'Домашний',
-                      'Другой',
-                    ] as PhoneType[]
-                  ).map((type) => (
+                  {PHONE_TYPES.map((type) => (
                     <TouchableOpacity
                       key={type}
                       style={[
@@ -416,28 +406,25 @@ export default function NewContactScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.dropdown}
                 >
-                  {(['Личный', 'Рабочий', 'Другой'] as EmailType[]).map(
-                    (type) => (
-                      <TouchableOpacity
-                        key={type}
+                  {EMAIL_TYPES.map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={[
+                        styles.dropdownItem,
+                        email.type === type && styles.dropdownItemActive,
+                      ]}
+                      onPress={() => updateEmail(email.id, 'type', type)}
+                    >
+                      <Text
                         style={[
-                          styles.dropdownItem,
-                          email.type === type && styles.dropdownItemActive,
+                          styles.dropdownItemText,
+                          email.type === type && styles.dropdownItemTextActive,
                         ]}
-                        onPress={() => updateEmail(email.id, 'type', type)}
                       >
-                        <Text
-                          style={[
-                            styles.dropdownItemText,
-                            email.type === type &&
-                              styles.dropdownItemTextActive,
-                          ]}
-                        >
-                          {type}
-                        </Text>
-                      </TouchableOpacity>
-                    ),
-                  )}
+                        {type}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
             ))}
@@ -488,28 +475,26 @@ export default function NewContactScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.dropdown}
                 >
-                  {(['Домашний', 'Рабочий', 'Другой'] as AddressType[]).map(
-                    (type) => (
-                      <TouchableOpacity
-                        key={type}
+                  {ADDRESS_TYPES.map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={[
+                        styles.dropdownItem,
+                        address.type === type && styles.dropdownItemActive,
+                      ]}
+                      onPress={() => updateAddress(address.id, 'type', type)}
+                    >
+                      <Text
                         style={[
-                          styles.dropdownItem,
-                          address.type === type && styles.dropdownItemActive,
+                          styles.dropdownItemText,
+                          address.type === type &&
+                            styles.dropdownItemTextActive,
                         ]}
-                        onPress={() => updateAddress(address.id, 'type', type)}
                       >
-                        <Text
-                          style={[
-                            styles.dropdownItemText,
-                            address.type === type &&
-                              styles.dropdownItemTextActive,
-                          ]}
-                        >
-                          {type}
-                        </Text>
-                      </TouchableOpacity>
-                    ),
-                  )}
+                        {type}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
             ))}

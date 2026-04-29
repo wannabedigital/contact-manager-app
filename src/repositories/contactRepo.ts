@@ -247,9 +247,16 @@ export const contactRepo = {
       SELECT DISTINCT c.* FROM contacts c
       LEFT JOIN contact_phones p ON c.id = p.contact_id
       LEFT JOIN contact_emails e ON c.id = e.contact_id
-      WHERE c.first_name LIKE ? OR c.last_name LIKE ? OR c.company LIKE ? OR p.phone_number LIKE ? OR e.email_address LIKE ?
+      LEFT JOIN contact_addresses a ON c.id = a.contact_id
+      WHERE c.first_name LIKE ? OR c.last_name LIKE ? OR c.patronymic LIKE ? OR
+            c.company LIKE ? OR c.date_of_birth LIKE ? OR c.notes LIKE ? OR
+            p.phone_number LIKE ? OR e.email_address LIKE ? OR a.address LIKE ?
       ORDER BY c.first_name, c.last_name
       `,
+      searchTerm,
+      searchTerm,
+      searchTerm,
+      searchTerm,
       searchTerm,
       searchTerm,
       searchTerm,

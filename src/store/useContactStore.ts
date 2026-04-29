@@ -13,7 +13,7 @@ type State = {
   searchContacts: (query: string) => Promise<void>;
 };
 
-export const useContactStore = create<State>((set) => ({
+export const useContactStore = create<State>((set, get) => ({
   contacts: [],
   isLoading: false,
   error: null,
@@ -28,20 +28,33 @@ export const useContactStore = create<State>((set) => ({
     }
   },
 
-  addContact: async (contact) => {
+  addContact: async (contactInput) => {
     try {
-      await contactRepo.create(contact);
-      await useContactStore.getState().loadContacts();
+      const newId = await contactRepo.create(contactInput);
+      const fullContact = await contactRepo.getById(newId);
+      if (fullContact) {
+        set((state) => ({
+          contacts: [fullContact, ...state.contacts],
+          error: null,
+        }));
+      }
     } catch (err) {
-      console.error('[store] Ошибка в addContact:', err);
       set({ error: (err as Error).message });
     }
   },
 
-  updateContact: async (id, contact) => {
+  updateContact: async (id, contactInput) => {
     try {
-      await contactRepo.update(id, contact);
-      await useContactStore.getState().loadContacts();
+      await contactRepo.update(id, contactInput);
+      const updatedContact = await contactRepo.getById(id);
+      if (updatedContact) {
+        set((state) => ({
+          contacts: state.contacts.map((c) =>
+            c.id === id ? updatedContact : c,
+          ),
+          error: null,
+        }));
+      }
     } catch (err) {
       set({ error: (err as Error).message });
     }
@@ -50,7 +63,10 @@ export const useContactStore = create<State>((set) => ({
   deleteContact: async (id) => {
     try {
       await contactRepo.delete(id);
-      await useContactStore.getState().loadContacts();
+      set((state) => ({
+        contacts: state.contacts.filter((c) => c.id !== id),
+        error: null,
+      }));
     } catch (err) {
       set({ error: (err as Error).message });
     }
@@ -58,6 +74,10 @@ export const useContactStore = create<State>((set) => ({
 
   searchContacts: async (query) => {
     try {
+      if (!query.trim()) {
+        await get().loadContacts();
+        return;
+      }
       set({ isLoading: true, error: null });
       const results = await contactRepo.search(query);
       set({ contacts: results, isLoading: false });

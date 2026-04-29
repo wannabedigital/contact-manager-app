@@ -47,7 +47,7 @@ export default function ContactsScreen() {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/new-contact')}
+        onPress={() => router.push('/contact/new')}
       >
         <Ionicons name='add' size={28} color={colors.surface} />
       </TouchableOpacity>

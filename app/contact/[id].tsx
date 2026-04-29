@@ -183,7 +183,7 @@ export default function ContactDetailScreen() {
           {contact.first_name} {contact.last_name || ''}
         </Text>
         <TouchableOpacity
-          onPress={() => router.push(`/edit-contact/${contact.id}`)}
+          onPress={() => router.push(`/contact/edit/${contact.id}`)}
           style={styles.headerButton}
         >
           <Ionicons name='create-outline' size={28} color={colors.primary} />

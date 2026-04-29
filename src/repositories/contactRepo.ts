@@ -14,23 +14,49 @@ export const contactRepo = {
       'SELECT * FROM contacts ORDER BY first_name, last_name',
     )) as Contact[];
 
-    const result: Contact[] = [];
-    for (const c of contacts) {
-      const phones = (await db.getAllAsync(
-        'SELECT * FROM contact_phones WHERE contact_id = ?',
-        c.id,
-      )) as Phone[];
-      const emails = (await db.getAllAsync(
-        'SELECT * FROM contact_emails WHERE contact_id = ?',
-        c.id,
-      )) as Email[];
-      const addresses = (await db.getAllAsync(
-        'SELECT * FROM contact_addresses WHERE contact_id = ?',
-        c.id,
-      )) as Address[];
-      result.push({ ...c, phones, emails, addresses });
-    }
-    return result;
+    if (contacts.length === 0) return [];
+
+    const contactIds = contacts.map((c) => c.id);
+
+    const phones = (await db.getAllAsync(
+      `SELECT * FROM contact_phones WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Phone[];
+
+    const emails = (await db.getAllAsync(
+      `SELECT * FROM contact_emails WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Email[];
+
+    const addresses = (await db.getAllAsync(
+      `SELECT * FROM contact_addresses WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Address[];
+
+    const phonesMap = new Map<number, Phone[]>();
+    phones.forEach((p) => {
+      if (!phonesMap.has(p.contact_id)) phonesMap.set(p.contact_id, []);
+      phonesMap.get(p.contact_id)!.push(p);
+    });
+
+    const emailsMap = new Map<number, Email[]>();
+    emails.forEach((e) => {
+      if (!emailsMap.has(e.contact_id)) emailsMap.set(e.contact_id, []);
+      emailsMap.get(e.contact_id)!.push(e);
+    });
+
+    const addressesMap = new Map<number, Address[]>();
+    addresses.forEach((a) => {
+      if (!addressesMap.has(a.contact_id)) addressesMap.set(a.contact_id, []);
+      addressesMap.get(a.contact_id)!.push(a);
+    });
+
+    return contacts.map((c) => ({
+      ...c,
+      phones: phonesMap.get(c.id) || [],
+      emails: emailsMap.get(c.id) || [],
+      addresses: addressesMap.get(c.id) || [],
+    }));
   },
 
   async getById(id: number): Promise<Contact | null> {
@@ -210,7 +236,7 @@ export const contactRepo = {
       LEFT JOIN contact_emails e ON c.id = e.contact_id
       WHERE c.first_name LIKE ? OR c.last_name LIKE ? OR c.company LIKE ? OR p.phone_number LIKE ? OR e.email_address LIKE ?
       ORDER BY c.first_name, c.last_name
-    `,
+      `,
       searchTerm,
       searchTerm,
       searchTerm,
@@ -218,22 +244,48 @@ export const contactRepo = {
       searchTerm,
     )) as Contact[];
 
-    const result: Contact[] = [];
-    for (const c of contacts) {
-      const phones = (await db.getAllAsync(
-        'SELECT * FROM contact_phones WHERE contact_id = ?',
-        c.id,
-      )) as Phone[];
-      const emails = (await db.getAllAsync(
-        'SELECT * FROM contact_emails WHERE contact_id = ?',
-        c.id,
-      )) as Email[];
-      const addresses = (await db.getAllAsync(
-        'SELECT * FROM contact_addresses WHERE contact_id = ?',
-        c.id,
-      )) as Address[];
-      result.push({ ...c, phones, emails, addresses });
-    }
-    return result;
+    if (contacts.length === 0) return [];
+
+    const contactIds = contacts.map((c) => c.id);
+
+    const phones = (await db.getAllAsync(
+      `SELECT * FROM contact_phones WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Phone[];
+
+    const emails = (await db.getAllAsync(
+      `SELECT * FROM contact_emails WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Email[];
+
+    const addresses = (await db.getAllAsync(
+      `SELECT * FROM contact_addresses WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
+      ...contactIds,
+    )) as Address[];
+
+    const phonesMap = new Map<number, Phone[]>();
+    phones.forEach((p) => {
+      if (!phonesMap.has(p.contact_id)) phonesMap.set(p.contact_id, []);
+      phonesMap.get(p.contact_id)!.push(p);
+    });
+
+    const emailsMap = new Map<number, Email[]>();
+    emails.forEach((e) => {
+      if (!emailsMap.has(e.contact_id)) emailsMap.set(e.contact_id, []);
+      emailsMap.get(e.contact_id)!.push(e);
+    });
+
+    const addressesMap = new Map<number, Address[]>();
+    addresses.forEach((a) => {
+      if (!addressesMap.has(a.contact_id)) addressesMap.set(a.contact_id, []);
+      addressesMap.get(a.contact_id)!.push(a);
+    });
+
+    return contacts.map((c) => ({
+      ...c,
+      phones: phonesMap.get(c.id) || [],
+      emails: emailsMap.get(c.id) || [],
+      addresses: addressesMap.get(c.id) || [],
+    }));
   },
 };

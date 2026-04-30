@@ -1,5 +1,5 @@
-import { ContactForm } from '@/src/components/ContactForm';
-import { Loading } from '@/src/components/Loading';
+import { ContactForm } from '@/src/components/contact/ContactForm';
+import { Loading } from '@/src/components/ui/Loading';
 import { useContactStore } from '@/src/store/useContactStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

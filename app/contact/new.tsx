@@ -1,4 +1,4 @@
-import { ContactForm } from '@/src/components/ContactForm';
+import { ContactForm } from '@/src/components/contact/ContactForm';
 import { useContactStore } from '@/src/store/useContactStore';
 import { useRouter } from 'expo-router';
 

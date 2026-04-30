@@ -11,8 +11,7 @@ export const ComingSoon = ({ screen }: ComingSoonProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Экран
-        <Text style={styles.bold}>{screenName || ' '}</Text>в разработке
+        Экран <Text style={styles.bold}>{screenName || ' '}</Text> в разработке
       </Text>
     </View>
   );

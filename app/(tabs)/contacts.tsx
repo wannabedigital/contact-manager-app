@@ -1,5 +1,5 @@
-import { ContactCard } from '@/src/components/ContactCard';
-import { SearchBar } from '@/src/components/SearchBar';
+import { ContactCard } from '@/src/components/contact/ContactCard';
+import { SearchBar } from '@/src/components/ui/SearchBar';
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,10 +49,7 @@ export default function ContactsScreen() {
         </View>
       </View>
 
-      <SearchBar
-        isActive={isSearchActive}
-        onSearch={searchContacts}
-      />
+      <SearchBar isActive={isSearchActive} onSearch={searchContacts} />
 
       <FlatList
         data={contacts}

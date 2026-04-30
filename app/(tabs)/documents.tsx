@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { ComingSoon } from '@/src/components/ComingSoon';
 
 export default function DocumentsScreen() {
-  return (
-    <View>
-      <Text>Договоры</Text>
-    </View>
-  );
+  return <ComingSoon screen='Документы' />;
 }

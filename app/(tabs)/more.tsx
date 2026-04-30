@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { ComingSoon } from '@/src/components/ComingSoon';
 
 export default function MoreScreen() {
-  return (
-    <View>
-      <Text>Больше</Text>
-    </View>
-  );
+  return <ComingSoon screen='Настройки' />;
 }

@@ -1,3 +1,7 @@
+import { ContactHeader } from '@/src/components/contact/details/ContactHeader';
+import { InfoSection } from '@/src/components/contact/details/InfoSection';
+import { QuickActions } from '@/src/components/contact/details/QuickActions';
+import { Loading } from '@/src/components/ui/Loading';
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Contact } from '@/src/types/contact';
@@ -8,7 +12,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,69 +27,63 @@ export default function ContactDetailScreen() {
   const [contact, setContact] = useState<Contact | null>(null);
 
   useEffect(() => {
-    const loadContact = async () => {
-      await loadContacts();
-    };
-    loadContact();
-  }, [loadContacts]);
+    if (contacts.length === 0) loadContacts();
+  }, [contacts.length, loadContacts]);
 
   useEffect(() => {
     const found = contacts.find((c) => c.id.toString() === id);
     setContact(found || null);
   }, [contacts, id]);
 
-  if (!contact) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.headerButton}
-          >
-            <Ionicons name='arrow-back' size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Контакт</Text>
-          <View style={styles.headerButton} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Загрузка...</Text>
-        </View>
-      </View>
-    );
-  }
+  if (!contact) return <Loading />;
 
-  const handlePhonePress = (phones: Contact['phones']) => {
-    if (!phones || phones.length === 0) return;
+  const getPhoneNumber = (p: any) => p.phone_number.replace(/\D/g, '');
 
+  const handleCall = (phones: any[]) => {
     if (phones.length === 1) {
-      const number = phones[0].phone_number.replace(/\D/g, '');
-      Linking.openURL(`tel:${number}`);
+      Linking.openURL(`tel:${getPhoneNumber(phones[0])}`);
     } else {
       const options = [
         ...phones.map((p) => `${p.phone_number} (${p.type})`),
         'Отмена',
       ];
-      const cancelButtonIndex = options.length - 1;
-
       showActionSheetWithOptions(
-        { options, cancelButtonIndex, title: 'Выберите номер' },
-        (selectedIndex) => {
-          if (
-            selectedIndex !== undefined &&
-            selectedIndex !== cancelButtonIndex
-          ) {
-            const phone = phones[selectedIndex];
-            const number = phone.phone_number.replace(/\D/g, '');
-            Linking.openURL(`tel:${number}`);
-          }
+        {
+          options,
+          cancelButtonIndex: options.length - 1,
+          title: 'Выберите номер',
+        },
+        (idx) => {
+          if (idx !== undefined && idx !== options.length - 1)
+            Linking.openURL(`tel:${getPhoneNumber(phones[idx])}`);
         },
       );
     }
   };
 
-  const handleEmailPress = (emails: Contact['emails']) => {
-    if (!emails || emails.length === 0) return;
+  const handleSms = (phones: any[]) => {
+    if (phones.length === 1) {
+      Linking.openURL(`sms:${getPhoneNumber(phones[0])}`);
+    } else {
+      const options = [
+        ...phones.map((p) => `${p.phone_number} (${p.type})`),
+        'Отмена',
+      ];
+      showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: options.length - 1,
+          title: 'Выберите номер для SMS',
+        },
+        (idx) => {
+          if (idx !== undefined && idx !== options.length - 1)
+            Linking.openURL(`sms:${getPhoneNumber(phones[idx])}`);
+        },
+      );
+    }
+  };
 
+  const handleEmail = (emails: any[]) => {
     if (emails.length === 1) {
       Linking.openURL(`mailto:${emails[0].email_address}`);
     } else {
@@ -94,47 +91,15 @@ export default function ContactDetailScreen() {
         ...emails.map((e) => `${e.email_address} (${e.type})`),
         'Отмена',
       ];
-      const cancelButtonIndex = options.length - 1;
-
       showActionSheetWithOptions(
-        { options, cancelButtonIndex, title: 'Выберите email' },
-        (selectedIndex) => {
-          if (
-            selectedIndex !== undefined &&
-            selectedIndex !== cancelButtonIndex
-          ) {
-            const email = emails[selectedIndex];
-            Linking.openURL(`mailto:${email.email_address}`);
-          }
+        {
+          options,
+          cancelButtonIndex: options.length - 1,
+          title: 'Выберите email',
         },
-      );
-    }
-  };
-
-  const handleSmsPress = (phones: Contact['phones']) => {
-    if (!phones || phones.length === 0) return;
-
-    if (phones.length === 1) {
-      const number = phones[0].phone_number.replace(/\D/g, '');
-      Linking.openURL(`sms:${number}`);
-    } else {
-      const options = [
-        ...phones.map((p) => `${p.phone_number} (${p.type})`),
-        'Отмена',
-      ];
-      const cancelButtonIndex = options.length - 1;
-
-      showActionSheetWithOptions(
-        { options, cancelButtonIndex, title: 'Выберите номер для SMS' },
-        (selectedIndex) => {
-          if (
-            selectedIndex !== undefined &&
-            selectedIndex !== cancelButtonIndex
-          ) {
-            const phone = phones[selectedIndex];
-            const number = phone.phone_number.replace(/\D/g, '');
-            Linking.openURL(`sms:${number}`);
-          }
+        (idx) => {
+          if (idx !== undefined && idx !== options.length - 1)
+            Linking.openURL(`mailto:${emails[idx].email_address}`);
         },
       );
     }
@@ -143,32 +108,61 @@ export default function ContactDetailScreen() {
   const handleDelete = () => {
     Alert.alert(
       'Удаление контакта',
-      `Вы действительно хотите удалить контакт "${contact.last_name} ${contact.first_name}"?`,
+      `Удалить "${contact.first_name} ${contact.last_name}"?`,
       [
+        { text: 'Отмена', style: 'cancel' },
         {
-          text: 'Отмена',
-          style: 'cancel',
-        },
-        {
-          text: 'Хорошо',
+          text: 'Удалить',
           style: 'destructive',
           onPress: async () => {
-            try {
-              await deleteContact(contact.id);
-              router.back();
-            } catch (error) {
-              console.error('Ошибка при удалении:', error);
-              Alert.alert('Ошибка', 'Не удалось удалить контакт');
-            }
+            await deleteContact(contact.id);
+            router.back();
           },
         },
       ],
     );
   };
 
-  const hasPhones = contact.phones && contact.phones.length > 0;
-  const hasEmails = contact.emails && contact.emails.length > 0;
-  const hasAddresses = contact.addresses && contact.addresses.length > 0;
+  const phoneItems =
+    contact.phones?.map((p) => ({
+      id: p.id,
+      text: p.phone_number,
+      subText: p.type,
+      actions: [
+        {
+          icon: 'chatbubble-outline' as const,
+          onPress: () => handleSms([p]),
+        },
+        {
+          icon: 'call-outline' as const,
+          onPress: () => handleCall([p]),
+        },
+      ],
+    })) || [];
+
+  const emailItems =
+    contact.emails?.map((e) => ({
+      id: e.id,
+      text: e.email_address,
+      subText: e.type,
+      actions: [
+        {
+          icon: 'mail-outline' as const,
+          onPress: () => handleEmail([e]),
+        },
+      ],
+    })) || [];
+
+  const addressItems =
+    contact.addresses?.map((a) => ({
+      id: a.id,
+      text: a.address,
+      subText: a.type,
+    })) || [];
+
+  const hasPhones = !!(contact.phones && contact.phones.length > 0);
+  const hasEmails = !!(contact.emails && contact.emails.length > 0);
+  const hasAddresses = !!(contact.addresses && contact.addresses.length > 0);
 
   return (
     <View style={styles.container}>
@@ -179,8 +173,8 @@ export default function ContactDetailScreen() {
         >
           <Ionicons name='arrow-back' size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode='tail'>
-          {contact.first_name} {contact.last_name || ''}
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {contact.first_name} {contact.last_name}
         </Text>
         <TouchableOpacity
           onPress={() => router.push(`/contact/edit/${contact.id}`)}
@@ -194,160 +188,58 @@ export default function ContactDetailScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.avatarContainer}>
-          {contact.photo_uri ? (
-            <Image source={{ uri: contact.photo_uri }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Ionicons
-                name='person-outline'
-                size={64}
-                color={colors.primary}
-              />
-            </View>
-          )}
+        <ContactHeader
+          firstName={contact.first_name}
+          lastName={contact.last_name}
+          patronymic={contact.patronymic}
+          photoUri={contact.photo_uri}
+        />
 
-          <Text style={styles.fullName}>
-            {contact.last_name} {contact.first_name}
-          </Text>
-          {contact.patronymic && (
-            <Text style={styles.patronymic}>{contact.patronymic}</Text>
-          )}
-        </View>
-
-        {contact.date_of_birth && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Дата рождения</Text>
-            <Text style={styles.infoText}>{contact.date_of_birth}</Text>
-          </View>
-        )}
+        <QuickActions
+          hasPhones={hasPhones}
+          hasEmails={hasEmails}
+          onCall={() => handleCall(contact.phones || [])}
+          onSms={() => handleSms(contact.phones || [])}
+          onEmail={() => handleEmail(contact.emails || [])}
+        />
 
         {contact.company && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Организация</Text>
-            <Text style={styles.infoText}>{contact.company}</Text>
-          </View>
+          <InfoSection
+            title='Организация'
+            items={[{ text: contact.company }]}
+            isSimpleText
+          />
         )}
-
         {contact.position && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Должность</Text>
-            <Text style={styles.infoText}>{contact.position}</Text>
-          </View>
+          <InfoSection
+            title='Должность'
+            items={[{ text: contact.position }]}
+            isSimpleText
+          />
         )}
-        {(hasEmails || hasPhones) && (
-          <View style={styles.quickActions}>
-            {hasEmails && (
-              <TouchableOpacity
-                style={styles.quickActionButton}
-                onPress={() => handleEmailPress(contact.emails)}
-              >
-                <Ionicons name='mail' size={32} color={colors.primary} />
-                <Text style={styles.quickActionText}>Email</Text>
-              </TouchableOpacity>
-            )}
-            {hasPhones && (
-              <TouchableOpacity
-                style={styles.quickActionButton}
-                onPress={() => handleSmsPress(contact.phones)}
-              >
-                <Ionicons name='chatbubble' size={32} color={colors.primary} />
-                <Text style={styles.quickActionText}>SMS</Text>
-              </TouchableOpacity>
-            )}
-            {hasPhones && (
-              <TouchableOpacity
-                style={styles.quickActionButton}
-                onPress={() => handlePhonePress(contact.phones)}
-              >
-                <Ionicons name='call' size={32} color={colors.primary} />
-                <Text style={styles.quickActionText}>Звонок</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        {hasPhones && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Телефоны</Text>
-            {contact.phones?.map((phone, index) => (
-              <View key={phone.id || index} style={styles.itemRow}>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemText}>{phone.phone_number}</Text>
-                  <Text style={styles.itemType}>{phone.type}</Text>
-                </View>
-                <View style={styles.itemActions}>
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => handleSmsPress([phone])}
-                  >
-                    <Ionicons
-                      name='chatbubble-outline'
-                      size={28}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => handlePhonePress([phone])}
-                  >
-                    <Ionicons
-                      name='call-outline'
-                      size={28}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
+        {contact.date_of_birth && (
+          <InfoSection
+            title='Дата рождения'
+            items={[{ text: contact.date_of_birth }]}
+            isSimpleText
+          />
         )}
 
+        {hasPhones && <InfoSection title='Телефоны' items={phoneItems} />}
         {hasEmails && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Электронная почта</Text>
-            {contact.emails?.map((email, index) => (
-              <View key={email.id || index} style={styles.itemRow}>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemText}>{email.email_address}</Text>
-                  <Text style={styles.itemType}>{email.type}</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => handleEmailPress([email])}
-                >
-                  <Ionicons
-                    name='mail-outline'
-                    size={28}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
+          <InfoSection title='Электронная почта' items={emailItems} />
         )}
-
-        {hasAddresses && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Адреса</Text>
-            {contact.addresses?.map((address, index) => (
-              <View key={address.id || index} style={styles.addressRow}>
-                <View style={styles.addressContent}>
-                  <Text style={styles.addressText}>{address.address}</Text>
-                  <Text style={styles.itemType}>{address.type}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {hasAddresses && <InfoSection title='Адреса' items={addressItems} />}
 
         {contact.notes && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Примечание</Text>
-            <Text style={styles.notesText}>{contact.notes}</Text>
-          </View>
+          <InfoSection
+            title='Примечание'
+            items={[{ text: contact.notes }]}
+            isSimpleText
+          />
         )}
 
-        <View style={styles.bottomPadding} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       <TouchableOpacity style={styles.fab} onPress={handleDelete}>

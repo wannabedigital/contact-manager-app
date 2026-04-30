@@ -11,8 +11,10 @@ export default function EditContactScreen() {
   const [contact, setContact] = useState<any>(null);
 
   useEffect(() => {
-    loadContacts();
-  }, [loadContacts]);
+    if (contacts.length === 0) {
+      loadContacts();
+    }
+  }, [contacts.length, loadContacts]);
 
   useEffect(() => {
     const found = contacts.find((c) => c.id.toString() === id);

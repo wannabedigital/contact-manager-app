@@ -1,9 +1,9 @@
 import { getDatabase } from './database';
 
 export async function runMigrations() {
-  const db = await getDatabase();
+	const db = await getDatabase();
 
-  await db.execAsync(`
+	await db.execAsync(`
     CREATE TABLE IF NOT EXISTS contacts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       first_name TEXT NOT NULL,
@@ -22,7 +22,7 @@ export async function runMigrations() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contact_id INTEGER NOT NULL,
       phone_number TEXT NOT NULL,
-      type TEXT NOT NULL DEFAULT 'mobile',
+      type TEXT NOT NULL DEFAULT 'Рабочий',
       FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
     );
 
@@ -30,7 +30,7 @@ export async function runMigrations() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contact_id INTEGER NOT NULL,
       email_address TEXT NOT NULL,
-      type TEXT NOT NULL DEFAULT 'personal',
+      type TEXT NOT NULL DEFAULT 'Рабочий',
       FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
     );
 
@@ -38,8 +38,22 @@ export async function runMigrations() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contact_id INTEGER NOT NULL,
       address TEXT NOT NULL,
-      type TEXT NOT NULL DEFAULT 'home',
+      type TEXT NOT NULL DEFAULT 'Рабочий',
       FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS groups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS contact_groups (
+      contact_id INTEGER NOT NULL,
+      group_id INTEGER NOT NULL,
+      PRIMARY KEY (contact_id, group_id),
+      FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE,
+      FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
     );
 
     CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(first_name, last_name);

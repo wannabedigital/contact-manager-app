@@ -35,6 +35,7 @@ export interface Address {
 export interface Group {
 	id: number;
 	name: string;
+	sort_order: number;
 	created_at: string;
 }
 

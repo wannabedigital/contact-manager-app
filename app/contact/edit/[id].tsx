@@ -1,27 +1,20 @@
-import { ContactForm } from "@/src/components/contact/ContactForm";
-import { Loading } from "@/src/components/ui/Loading";
-import { useContactStore } from "@/src/store/useContactStore";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { ContactForm } from '@/src/components/contact/ContactForm';
+import { Loading } from '@/src/components/ui/Loading';
+import { useContactStore } from '@/src/store/useContactStore';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 export default function EditContactScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
-	const { contacts, loadContacts, updateContact } = useContactStore();
+	const { contacts, updateContact, groups, loadGroups } = useContactStore();
 	const [contact, setContact] = useState<any>(null);
 
 	useEffect(() => {
-		if (contacts.length === 0) {
-			loadContacts();
-		}
-	}, [contacts.length, loadContacts]);
-
-	useEffect(() => {
-		const found = contacts.find((c) => c.id.toString() === id);
-		if (found) {
-			setContact(found);
-		}
-	}, [contacts, id]);
+		loadGroups();
+		const found = contacts.find((c) => c.id === Number(id));
+		setContact(found);
+	}, [loadGroups, id, contacts]);
 
 	const handleSave = async (data: any) => {
 		await updateContact(parseInt(id), data);
@@ -38,8 +31,9 @@ export default function EditContactScreen() {
 
 	return (
 		<ContactForm
-			title="Редактирование контакта"
+			title='Редактирование контакта'
 			initialData={contact}
+			groups={groups}
 			onSave={handleSave}
 			onCancel={handleCancel}
 		/>

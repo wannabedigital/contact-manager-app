@@ -65,7 +65,12 @@ export const contactRepo = {
 			if (!groupsMap.has(g.contact_id)) groupsMap.set(g.contact_id, []);
 			groupsMap
 				.get(g.contact_id)!
-				.push({ id: g.id, name: g.name, created_at: g.created_at });
+				.push({
+					id: g.id,
+					name: g.name,
+					sort_order: g.sort_order,
+					created_at: g.created_at,
+				});
 		});
 
 		return contacts.map((c) => ({

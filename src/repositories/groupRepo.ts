@@ -5,22 +5,62 @@ export const groupRepo = {
 	async getAll(): Promise<Group[]> {
 		const db = await getDatabase();
 		return (await db.getAllAsync(
-			'SELECT * FROM groups ORDER BY name',
+			'SELECT * FROM groups ORDER BY ORDER BY sort_order ASC, created_at ASC',
 		)) as Group[];
 	},
 
 	async create(name: string): Promise<number> {
 		const db = await getDatabase();
+		const maxOrderRes: any = await db.getFirstAsync(
+			'SELECT MAX(sort_order) as maxOrder FROM groups',
+		);
+		const nextOrder = (maxOrderRes?.maxOrder ?? 0) + 1;
+
 		const result = await db.runAsync(
-			'INSERT INTO groups (name) VALUES (?)',
+			'INSERT INTO groups (name, sort_order) VALUES (?, ?)',
 			name,
+			nextOrder,
 		);
 		return result.lastInsertRowId as number;
 	},
 
-	async update(id: number, name: string): Promise<void> {
+	async updateOrder(groups: Group[]): Promise<void> {
 		const db = await getDatabase();
-		await db.runAsync('UPDATE groups SET name = ? WHERE id = ?', [name, id]);
+		await db.withTransactionAsync(async () => {
+			for (let i = 0; i < groups.length; i++) {
+				await db.runAsync(
+					'UPDATE groups SET sort_order = ? WHERE id = ?',
+					i,
+					groups[i].id,
+				);
+			}
+		});
+	},
+
+	async update(
+		groupId: number,
+		name: string,
+		contactIds: number[],
+	): Promise<void> {
+		const db = await getDatabase();
+		await db.withTransactionAsync(async () => {
+			await db.runAsync(
+				'UPDATE groups SET name = ? WHERE id = ?',
+				name,
+				groupId,
+			);
+			await db.runAsync(
+				'DELETE FROM contact_groups WHERE group_id = ?',
+				groupId,
+			);
+			for (const cId of contactIds) {
+				await db.runAsync(
+					'INSERT INTO contact_groups (contact_id, group_id) VALUES (?, ?)',
+					cId,
+					groupId,
+				);
+			}
+		});
 	},
 
 	async delete(id: number): Promise<void> {

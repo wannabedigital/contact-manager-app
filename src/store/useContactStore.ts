@@ -19,6 +19,17 @@ type State = {
 	setSelectedGroupId: (id: number | null) => void;
 	addGroup: (name: string) => Promise<void>;
 	deleteGroup: (id: number) => Promise<void>;
+
+	tempSelectedIds: number[];
+	setTempSelectedIds: (ids: number[]) => void;
+	updateGroupsOrder: (groups: Group[]) => Promise<void>;
+
+	createGroupWithMembers: (name: string, contactIds: number[]) => Promise<void>;
+	updateGroupDetails: (
+		id: number,
+		name: string,
+		contactIds: number[],
+	) => Promise<void>;
 };
 
 export const useContactStore = create<State>((set, get) => ({
@@ -27,6 +38,7 @@ export const useContactStore = create<State>((set, get) => ({
 	selectedGroupId: null,
 	isLoading: false,
 	error: null,
+	tempSelectedIds: [],
 
 	loadContacts: async () => {
 		try {
@@ -106,6 +118,39 @@ export const useContactStore = create<State>((set, get) => ({
 		try {
 			await groupRepo.delete(id);
 			if (get().selectedGroupId === id) set({ selectedGroupId: null });
+			await get().loadGroups();
+			await get().loadContacts();
+		} catch (err) {
+			set({ error: (err as Error).message });
+		}
+	},
+
+	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
+
+	updateGroupsOrder: async (groups) => {
+		set({ groups });
+		try {
+			await groupRepo.updateOrder(groups);
+		} catch (err) {
+			set({ error: (err as Error).message });
+			await get().loadGroups();
+		}
+	},
+
+	createGroupWithMembers: async (name, contactIds) => {
+		try {
+			const newId = await groupRepo.create(name);
+			await groupRepo.update(newId, name, contactIds);
+			await get().loadGroups();
+			await get().loadContacts();
+		} catch (err) {
+			set({ error: (err as Error).message });
+		}
+	},
+
+	updateGroupDetails: async (id, name, contactIds) => {
+		try {
+			await groupRepo.update(id, name, contactIds);
 			await get().loadGroups();
 			await get().loadContacts();
 		} catch (err) {

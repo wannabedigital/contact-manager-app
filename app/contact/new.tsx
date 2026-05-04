@@ -1,25 +1,31 @@
 import { ContactForm } from '@/src/components/contact/ContactForm';
 import { useContactStore } from '@/src/store/useContactStore';
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 
 export default function NewContactScreen() {
-  const router = useRouter();
-  const { addContact } = useContactStore();
+	const router = useRouter();
+	const { addContact, groups, loadGroups } = useContactStore();
 
-  const handleSave = async (data: any) => {
-    await addContact(data);
-    router.back();
-  };
+	useEffect(() => {
+		loadGroups();
+	}, [loadGroups]);
 
-  const handleCancel = () => {
-    router.back();
-  };
+	const handleSave = async (data: any) => {
+		await addContact(data);
+		router.back();
+	};
 
-  return (
-    <ContactForm
-      title='Новый контакт'
-      onSave={handleSave}
-      onCancel={handleCancel}
-    />
-  );
+	const handleCancel = () => {
+		router.back();
+	};
+
+	return (
+		<ContactForm
+			title='Новый контакт'
+			groups={groups}
+			onSave={handleSave}
+			onCancel={handleCancel}
+		/>
+	);
 }

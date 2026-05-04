@@ -6,6 +6,7 @@ import {
 	EmailType,
 	PHONE_TYPES,
 	PhoneType,
+	Group,
 } from '@/src/types/contact';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -45,6 +46,7 @@ interface ContactFormProps {
 	onSave: (data: any) => Promise<void>;
 	onCancel: () => void;
 	title: string;
+	groups: Group[];
 }
 
 export const ContactForm = ({
@@ -52,6 +54,7 @@ export const ContactForm = ({
 	onSave,
 	onCancel,
 	title,
+	groups,
 }: ContactFormProps) => {
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -68,6 +71,8 @@ export const ContactForm = ({
 	const [emails, setEmails] = useState<EmailField[]>([]);
 	const [addresses, setAddresses] = useState<AddressField[]>([]);
 
+	const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
+
 	useEffect(() => {
 		if (initialData) {
 			setFirstName(initialData.first_name || '');
@@ -78,6 +83,8 @@ export const ContactForm = ({
 			setDateOfBirth(initialData.date_of_birth || '');
 			setNotes(initialData.notes || '');
 			setPhotoUri(initialData.photo_uri || null);
+
+			setSelectedGroupIds(initialData.groups?.map((g: any) => g.id) || []);
 
 			setPhones(
 				initialData.phones?.map((p: any) => ({
@@ -114,6 +121,7 @@ export const ContactForm = ({
 			setPhones([]);
 			setEmails([]);
 			setAddresses([]);
+			setSelectedGroupIds([]);
 		}
 	}, [initialData]);
 
@@ -182,6 +190,14 @@ export const ContactForm = ({
 			addresses.map((a) => (a.id === id ? { ...a, [field]: value } : a)),
 		);
 
+	const toggleGroup = (groupId: number) => {
+		setSelectedGroupIds((prev) =>
+			prev.includes(groupId)
+				? prev.filter((id) => id !== groupId)
+				: [...prev, groupId],
+		);
+	};
+
 	const handleSave = async () => {
 		if (!firstName.trim()) {
 			Alert.alert('Ошибка', 'Поле "Имя" обязательно для заполнения');
@@ -219,6 +235,7 @@ export const ContactForm = ({
 			date_of_birth: dateOfBirth || undefined,
 			notes: notes.trim() || undefined,
 			photo_uri: photoUri || undefined,
+			groupIds: selectedGroupIds,
 			phones: phones
 				.filter((p) => p.phone_number.trim())
 				.map((p) => ({
@@ -409,6 +426,40 @@ export const ContactForm = ({
 							/>
 						</View>
 					</View>
+
+					{groups.length > 0 && (
+						<View style={styles.section}>
+							<Text style={styles.sectionTitle}>Группы</Text>
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={styles.dropdown}
+							>
+								{groups.map((group) => {
+									const isSelected = selectedGroupIds.includes(group.id);
+									return (
+										<TouchableOpacity
+											key={group.id}
+											style={[
+												styles.dropdownItem,
+												isSelected && styles.dropdownItemActive,
+											]}
+											onPress={() => toggleGroup(group.id)}
+										>
+											<Text
+												style={[
+													styles.dropdownItemText,
+													isSelected && styles.dropdownItemTextActive,
+												]}
+											>
+												{group.name}
+											</Text>
+										</TouchableOpacity>
+									);
+								})}
+							</ScrollView>
+						</View>
+					)}
 
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Телефон</Text>

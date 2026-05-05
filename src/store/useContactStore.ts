@@ -134,15 +134,17 @@ export const useContactStore = create<State>((set, get) => ({
 
 	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
 
-	updateGroupsOrder: async (groups) => {
-		set({ groups });
-		try {
-			await groupRepo.updateOrder(groups);
-		} catch (err) {
-			set({ error: (err as Error).message });
-			console.error(err);
-			await get().loadGroups();
-		}
+	updateGroupsOrder: async (newGroups) => {
+		set({ groups: newGroups });
+		setTimeout(async () => {
+			try {
+				await groupRepo.updateOrder(newGroups);
+			} catch (err) {
+				console.error('[STORE] ОШИБКА В updateGroupsOrder:', err);
+				set({ error: (err as Error).message });
+				await get().loadGroups();
+			}
+		}, 300);
 	},
 
 	createGroupWithMembers: async (name, contactIds) => {

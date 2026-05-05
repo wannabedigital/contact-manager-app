@@ -55,15 +55,14 @@ export default function GroupsIndexScreen() {
 					activeOpacity={1}
 					style={[styles.rowItem, isActive && styles.rowItemActive]}
 					onPress={() => router.push(`/groups/${item.id}`)}
-					onLongPress={drag}
 				>
-					<View style={styles.dragHandle}>
+					<TouchableOpacity style={styles.dragHandle} onPressIn={drag}>
 						<Ionicons
 							name='reorder-two'
 							size={24}
 							color={colors.textSecondary}
 						/>
-					</View>
+					</TouchableOpacity>
 
 					<Text style={styles.rowTitle}>{item.name}</Text>
 
@@ -100,10 +99,9 @@ export default function GroupsIndexScreen() {
 				onDragEnd={({ data }) => updateGroupsOrder(data)}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderItem}
-				containerStyle={{ flex: 1 }} // Важно для корректного отображения списка
+				containerStyle={{ flex: 1 }}
 				contentContainerStyle={styles.listContainer}
 				ListEmptyComponent={
-					// Добавлено, чтобы не было пустого экрана
 					<View style={styles.emptyContainer}>
 						<Text style={styles.emptyText}>
 							У вас пока нет созданных групп.
@@ -158,22 +156,43 @@ const styles = StyleSheet.create({
 		borderBottomColor: colors.divider,
 	},
 	rowItemActive: {
-		backgroundColor: '#F9F9F9',
+		backgroundColor: colors.primaryLight,
 		elevation: 5,
-		shadowColor: '#000',
+		shadowColor: colors.primaryDark,
 		shadowOpacity: 0.1,
 		shadowRadius: 5,
 	},
-	dragHandle: { paddingHorizontal: 16, paddingVertical: 8 },
-	rowTitle: { flex: 1, fontSize: 16, color: colors.textPrimary },
-	optionsHandle: { paddingHorizontal: 16, paddingVertical: 8 },
+	dragHandle: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
+	rowTitle: {
+		flex: 1,
+		fontSize: 16,
+		color: colors.textPrimary,
+	},
+	optionsHandle: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
 	createButton: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		padding: 16,
 		gap: 8,
 	},
-	createButtonText: { fontSize: 16, color: colors.primary, fontWeight: '500' },
-	emptyContainer: { padding: 40, alignItems: 'center' },
-	emptyText: { color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
+	createButtonText: {
+		fontSize: 16,
+		color: colors.primary,
+		fontWeight: '500',
+	},
+	emptyContainer: {
+		padding: 40,
+		alignItems: 'center',
+	},
+	emptyText: {
+		color: colors.textSecondary,
+		textAlign: 'center',
+		fontSize: 16,
+	},
 });

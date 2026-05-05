@@ -3,81 +3,100 @@ import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import DraggableFlatList, {
 	RenderItemParams,
-	ScaleDecorator,
 } from 'react-native-draggable-flatlist';
+import { Group } from '@/src/types/contact';
 
 export default function GroupsIndexScreen() {
-	const { groups, loadGroups, updateGroupsOrder, deleteGroup } =
-		useContactStore();
 	const { showActionSheetWithOptions } = useActionSheet();
+
+	const {
+		groups,
+		loadGroups,
+		updateGroupsOrder,
+		deleteGroup,
+		setGroupsOrderLocally,
+	} = useContactStore();
+	const [isReordered, setIsReordered] = useState(false);
 
 	useEffect(() => {
 		loadGroups();
 	}, [loadGroups]);
 
-	const handleOptions = (id: number, name: string) => {
-		showActionSheetWithOptions(
-			{
-				options: ['Настроить группу', 'Удалить', 'Отмена'],
-				destructiveButtonIndex: 1,
-				cancelButtonIndex: 2,
-				title: `Управление: ${name}`,
-			},
-			(buttonIndex) => {
-				if (buttonIndex === 0) {
-					router.push(`/groups/${id}`);
-				} else if (buttonIndex === 1) {
-					Alert.alert(
-						'Удаление',
-						`Точно удалить группу "${name}"? Контакты не удалятся.`,
-						[
-							{ text: 'Отмена', style: 'cancel' },
-							{
-								text: 'Удалить',
-								style: 'destructive',
-								onPress: () => deleteGroup(id),
-							},
-						],
-					);
-				}
-			},
-		);
+	useEffect(() => {
+		const ids = groups.map((g) => g.id);
+		console.warn('[DEBUG] groups в сторе:', ids);
+	}, [groups]);
+
+	const handleSaveOrder = () => {
+		updateGroupsOrder(groups);
+		setIsReordered(false);
 	};
 
-	const renderItem = ({ item, drag, isActive }: RenderItemParams<any>) => {
+	const handleOptions = useCallback(
+		(id: number, name: string) => {
+			showActionSheetWithOptions(
+				{
+					options: ['Настроить группу', 'Удалить', 'Отмена'],
+					destructiveButtonIndex: 1,
+					cancelButtonIndex: 2,
+					title: `Управление: ${name}`,
+				},
+				(buttonIndex) => {
+					if (buttonIndex === 0) {
+						router.push(`/groups/${id}`);
+					} else if (buttonIndex === 1) {
+						Alert.alert(
+							'Удаление',
+							`Точно удалить группу "${name}"? Контакты не удалятся.`,
+							[
+								{ text: 'Отмена', style: 'cancel' },
+								{
+									text: 'Удалить',
+									style: 'destructive',
+									onPress: () => deleteGroup(id),
+								},
+							],
+						);
+					}
+				},
+			);
+		},
+		[deleteGroup, showActionSheetWithOptions],
+	);
+
+	const renderItem = ({ item, drag, isActive }: RenderItemParams<Group>) => {
 		return (
-			<ScaleDecorator>
+			<TouchableOpacity
+				activeOpacity={0.8}
+				style={[styles.rowItem, isActive && styles.rowItemActive]}
+				onPress={() => router.push(`/groups/${item.id}`)}
+			>
 				<TouchableOpacity
-					activeOpacity={1}
-					style={[styles.rowItem, isActive && styles.rowItemActive]}
-					onPress={() => router.push(`/groups/${item.id}`)}
+					style={styles.dragHandle}
+					onPressIn={drag}
+					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 				>
-					<TouchableOpacity style={styles.dragHandle} onPressIn={drag}>
-						<Ionicons
-							name='reorder-two'
-							size={24}
-							color={colors.textSecondary}
-						/>
-					</TouchableOpacity>
-
-					<Text style={styles.rowTitle}>{item.name}</Text>
-
-					<TouchableOpacity
-						onPress={() => handleOptions(item.id, item.name)}
-						style={styles.optionsHandle}
-					>
-						<Ionicons
-							name='ellipsis-vertical'
-							size={20}
-							color={colors.textSecondary}
-						/>
-					</TouchableOpacity>
+					<Ionicons name='reorder-two' size={24} color={colors.textSecondary} />
 				</TouchableOpacity>
-			</ScaleDecorator>
+
+				<Text style={styles.rowTitle}>{item.name}</Text>
+
+				<TouchableOpacity
+					onPress={() => handleOptions(item.id, item.name)}
+					style={styles.optionsHandle}
+					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+				>
+					<Ionicons
+						name='ellipsis-vertical'
+						size={20}
+						color={colors.textSecondary}
+					/>
+				</TouchableOpacity>
+			</TouchableOpacity>
 		);
 	};
 
@@ -90,13 +109,28 @@ export default function GroupsIndexScreen() {
 				>
 					<Ionicons name='arrow-back' size={24} color={colors.primary} />
 				</TouchableOpacity>
+
 				<Text style={styles.headerTitle}>Настройки групп</Text>
-				<View style={styles.headerButton} />
+
+				<View style={styles.headerButton}>
+					{isReordered && (
+						<TouchableOpacity onPress={handleSaveOrder}>
+							<Ionicons name='checkmark' size={24} color={colors.success} />
+						</TouchableOpacity>
+					)}
+				</View>
 			</View>
 
 			<DraggableFlatList
 				data={groups}
-				onDragEnd={({ data }) => updateGroupsOrder(data)}
+				onDragEnd={({ data }) => {
+					const ids = data.map((g) => g.id);
+					console.warn('[DEBUG] onDragEnd вызван, порядок:', ids);
+
+					setGroupsOrderLocally(data);
+					setIsReordered(true);
+				}}
+				removeClippedSubviews={false}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderItem}
 				containerStyle={{ flex: 1 }}
@@ -138,7 +172,10 @@ const styles = StyleSheet.create({
 		borderBottomWidth: 1,
 		borderBottomColor: colors.divider,
 	},
-	headerButton: { width: 40, alignItems: 'center' },
+	headerButton: {
+		width: 40,
+		alignItems: 'center',
+	},
 	headerTitle: {
 		flex: 1,
 		textAlign: 'center',
@@ -157,42 +194,17 @@ const styles = StyleSheet.create({
 	},
 	rowItemActive: {
 		backgroundColor: colors.primaryLight,
-		elevation: 5,
-		shadowColor: colors.primaryDark,
-		shadowOpacity: 0.1,
-		shadowRadius: 5,
 	},
-	dragHandle: {
-		paddingHorizontal: 16,
-		paddingVertical: 8,
-	},
-	rowTitle: {
-		flex: 1,
-		fontSize: 16,
-		color: colors.textPrimary,
-	},
-	optionsHandle: {
-		paddingHorizontal: 16,
-		paddingVertical: 8,
-	},
+	dragHandle: { paddingHorizontal: 16, paddingVertical: 8 },
+	rowTitle: { flex: 1, fontSize: 16, color: colors.textPrimary },
+	optionsHandle: { paddingHorizontal: 16, paddingVertical: 8 },
 	createButton: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		padding: 16,
 		gap: 8,
 	},
-	createButtonText: {
-		fontSize: 16,
-		color: colors.primary,
-		fontWeight: '500',
-	},
-	emptyContainer: {
-		padding: 40,
-		alignItems: 'center',
-	},
-	emptyText: {
-		color: colors.textSecondary,
-		textAlign: 'center',
-		fontSize: 16,
-	},
+	createButtonText: { fontSize: 16, color: colors.primary, fontWeight: '500' },
+	emptyContainer: { padding: 40, alignItems: 'center' },
+	emptyText: { color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
 });

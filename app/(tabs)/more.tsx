@@ -1,4 +1,3 @@
-import { ComingSoon } from '@/src/components/ui/ComingSoon';
 import { useRouter } from 'expo-router';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
@@ -7,7 +6,7 @@ export default function MoreScreen() {
 	return (
 		<View style={styles.container}>
 			<TouchableOpacity
-				onPress={() => router.push('/groups/index')}
+				onPress={() => router.push('/groups')}
 				style={styles.button}
 			>
 				<Text>Перейти к группам</Text>

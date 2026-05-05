@@ -2,8 +2,8 @@ import { SelectedContactsList } from '@/src/components/contact/SelectedContactsL
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
 	Alert,
 	StyleSheet,
@@ -29,23 +29,28 @@ export default function EditGroupScreen() {
 	const currentGroup = groups.find((g) => g.id === groupId);
 	const [name, setName] = useState(currentGroup?.name || '');
 
-	useFocusEffect(
-		useCallback(() => {
-			if (currentGroup) {
-				const groupContacts = contacts.filter((c) =>
-					c.groups?.some((g) => g.id === groupId),
-				);
-				setTempSelectedIds(groupContacts.map((c) => c.id));
-			}
-		}, [setTempSelectedIds, groupId, currentGroup, contacts]),
-	);
+	useEffect(() => {
+		if (currentGroup) {
+			const groupContacts = contacts.filter((c) =>
+				c.groups?.some((g) => g.id === groupId),
+			);
+			setTempSelectedIds(groupContacts.map((c) => c.id));
+		}
+	}, []);
 
 	if (!currentGroup) return null;
 
 	const handleSave = async () => {
 		if (!name.trim()) return Alert.alert('Ошибка', 'Введите название');
-		await updateGroupDetails(groupId, name.trim(), tempSelectedIds);
-		router.back();
+		try {
+			await updateGroupDetails(groupId, name.trim(), tempSelectedIds);
+			router.back();
+		} catch (error: any) {
+			Alert.alert(
+				'Ошибка сохранения',
+				error.message || 'Не удалось обновить группу.',
+			);
+		}
 	};
 
 	const handleDelete = () => {
@@ -62,8 +67,8 @@ export default function EditGroupScreen() {
 		]);
 	};
 
-	const removeContact = (id: number) => {
-		setTempSelectedIds(tempSelectedIds.filter((cId) => cId !== id));
+	const removeContact = (contactId: number) => {
+		setTempSelectedIds(tempSelectedIds.filter((cId) => cId !== contactId));
 	};
 
 	return (
@@ -100,7 +105,6 @@ export default function EditGroupScreen() {
 	);
 }
 
-// Стили точно такие же, как в new.tsx, плюс кнопка удаления
 const styles = StyleSheet.create({
 	container: { flex: 1, backgroundColor: colors.background },
 	header: {

@@ -145,6 +145,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
+			throw err;
 		}
 	},
 
@@ -155,6 +156,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
+			throw err;
 		}
 	},
 }));

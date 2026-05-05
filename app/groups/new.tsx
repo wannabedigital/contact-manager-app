@@ -2,8 +2,8 @@ import { SelectedContactsList } from '@/src/components/contact/SelectedContactsL
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
 	Alert,
 	StyleSheet,
@@ -18,19 +18,26 @@ export default function NewGroupScreen() {
 		useContactStore();
 	const [name, setName] = useState('');
 
-	useFocusEffect(
-		useCallback(() => {
-			setTempSelectedIds([]);
-		}, [setTempSelectedIds]),
-	);
+	useEffect(() => {
+		setTempSelectedIds([]);
+	}, []);
 
 	const handleSave = async () => {
 		if (!name.trim()) {
 			Alert.alert('Ошибка', 'Введите название группы');
 			return;
 		}
-		await createGroupWithMembers(name.trim(), tempSelectedIds);
-		router.back();
+
+		try {
+			await createGroupWithMembers(name.trim(), tempSelectedIds);
+			router.back();
+		} catch (error: any) {
+			// Теперь, если SQLite ругнется на отсутствие колонки, ты увидишь это!
+			Alert.alert(
+				'Ошибка сохранения',
+				error.message || 'Не удалось создать группу.',
+			);
+		}
 	};
 
 	const removeContact = (id: number) => {

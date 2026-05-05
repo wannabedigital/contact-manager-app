@@ -3,6 +3,7 @@ import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
 	RenderItemParams,
@@ -10,8 +11,13 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist';
 
 export default function GroupsIndexScreen() {
-	const { groups, updateGroupsOrder, deleteGroup } = useContactStore();
+	const { groups, loadGroups, updateGroupsOrder, deleteGroup } =
+		useContactStore();
 	const { showActionSheetWithOptions } = useActionSheet();
+
+	useEffect(() => {
+		loadGroups();
+	}, [loadGroups]);
 
 	const handleOptions = (id: number, name: string) => {
 		showActionSheetWithOptions(
@@ -51,13 +57,13 @@ export default function GroupsIndexScreen() {
 					onPress={() => router.push(`/groups/${item.id}`)}
 					onLongPress={drag}
 				>
-					<TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
+					<View style={styles.dragHandle}>
 						<Ionicons
 							name='reorder-two'
 							size={24}
 							color={colors.textSecondary}
 						/>
-					</TouchableOpacity>
+					</View>
 
 					<Text style={styles.rowTitle}>{item.name}</Text>
 
@@ -94,7 +100,16 @@ export default function GroupsIndexScreen() {
 				onDragEnd={({ data }) => updateGroupsOrder(data)}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderItem}
+				containerStyle={{ flex: 1 }} // Важно для корректного отображения списка
 				contentContainerStyle={styles.listContainer}
+				ListEmptyComponent={
+					// Добавлено, чтобы не было пустого экрана
+					<View style={styles.emptyContainer}>
+						<Text style={styles.emptyText}>
+							У вас пока нет созданных групп.
+						</Text>
+					</View>
+				}
 				ListFooterComponent={
 					<TouchableOpacity
 						style={styles.createButton}
@@ -143,7 +158,7 @@ const styles = StyleSheet.create({
 		borderBottomColor: colors.divider,
 	},
 	rowItemActive: {
-		backgroundColor: colors.background,
+		backgroundColor: '#F9F9F9',
 		elevation: 5,
 		shadowColor: '#000',
 		shadowOpacity: 0.1,
@@ -159,4 +174,6 @@ const styles = StyleSheet.create({
 		gap: 8,
 	},
 	createButtonText: { fontSize: 16, color: colors.primary, fontWeight: '500' },
+	emptyContainer: { padding: 40, alignItems: 'center' },
+	emptyText: { color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
 });

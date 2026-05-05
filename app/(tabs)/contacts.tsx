@@ -16,13 +16,15 @@ import {
 } from 'react-native';
 
 export default function ContactsScreen() {
-	const { contacts, loadContacts, selectedGroupId } = useContactStore();
+	const { contacts, loadContacts, selectedGroupId, loadGroups } =
+		useContactStore();
 	const [isSearchActive, setIsSearchActive] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 
 	useEffect(() => {
 		loadContacts();
-	}, [loadContacts]);
+		loadGroups();
+	}, [loadContacts, loadGroups]);
 
 	const toggleSearch = () => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

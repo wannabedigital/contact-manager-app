@@ -7,11 +7,13 @@ export default function SelectContactsScreen() {
 	const { tempSelectedIds, setTempSelectedIds } = useContactStore();
 
 	const handleSave = (newIds: number[]) => {
+		console.log('[select-contacts.tsx] Сохраняем выбранные ID:', newIds);
 		setTempSelectedIds(newIds);
 		router.back();
 	};
 
 	const handleCancel = () => {
+		console.log('[select-contacts.tsx] Отмена выбора');
 		router.back();
 	};
 

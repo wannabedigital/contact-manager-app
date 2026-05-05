@@ -19,20 +19,30 @@ export default function NewGroupScreen() {
 	const [name, setName] = useState('');
 
 	useEffect(() => {
+		console.log('[new.tsx] Очистка tempSelectedIds при входе на экран');
 		setTempSelectedIds([]);
-	}, []);
+	}, [setTempSelectedIds]);
 
 	const handleSave = async () => {
+		console.log(
+			'[new.tsx] Нажата кнопка сохранить. Имя:',
+			name,
+			'ID контактов:',
+			tempSelectedIds,
+		);
+
 		if (!name.trim()) {
 			Alert.alert('Ошибка', 'Введите название группы');
 			return;
 		}
 
 		try {
+			console.log('[new.tsx] Отправка запроса в store...');
 			await createGroupWithMembers(name.trim(), tempSelectedIds);
+			console.log('[new.tsx] Успешно! Возврат назад.');
 			router.back();
 		} catch (error: any) {
-			// Теперь, если SQLite ругнется на отсутствие колонки, ты увидишь это!
+			console.error('[new.tsx] ОШИБКА СОХРАНЕНИЯ:', error);
 			Alert.alert(
 				'Ошибка сохранения',
 				error.message || 'Не удалось создать группу.',

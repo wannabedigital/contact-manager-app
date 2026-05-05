@@ -36,7 +36,7 @@ export default function EditGroupScreen() {
 			);
 			setTempSelectedIds(groupContacts.map((c) => c.id));
 		}
-	}, []);
+	}, [contacts, currentGroup, groupId, setTempSelectedIds]);
 
 	if (!currentGroup) return null;
 

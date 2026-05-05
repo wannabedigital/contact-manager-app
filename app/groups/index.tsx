@@ -13,8 +13,11 @@ import { Group } from '@/src/types/contact';
 export default function GroupsIndexScreen() {
 	const { showActionSheetWithOptions } = useActionSheet();
 
-	const { groups, loadGroups, updateGroupsOrder, deleteGroup } =
-		useContactStore();
+	const groups = useContactStore((state) => state.groups);
+	const loadGroups = useContactStore((state) => state.loadGroups);
+	const updateGroupsOrder = useContactStore((state) => state.updateGroupsOrder);
+	const deleteGroup = useContactStore((state) => state.deleteGroup);
+
 	const [localGroups, setLocalGroups] = useState<Group[]>([]);
 	const [isReordered, setIsReordered] = useState(false);
 
@@ -26,7 +29,7 @@ export default function GroupsIndexScreen() {
 		if (!isReordered && groups.length > 0) {
 			setLocalGroups(groups);
 		}
-	}, [groups, isReordered]);
+	}, [groups]);
 
 	const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
 		setLocalGroups((prev) => {
@@ -39,8 +42,8 @@ export default function GroupsIndexScreen() {
 	}, []);
 
 	const handleSaveOrder = async () => {
-		await updateGroupsOrder(localGroups);
 		setIsReordered(false);
+		await updateGroupsOrder(localGroups);
 	};
 
 	const handleOptions = useCallback(
@@ -58,7 +61,8 @@ export default function GroupsIndexScreen() {
 					} else if (buttonIndex === 1) {
 						Alert.alert(
 							'Удаление',
-							`Точно удалить группу "${name}"? Контакты не удалятся.`,
+							`Вы уверены, что хотите удалить группу "${name}"?
+							\nКонтакты при этом не удалятся.`,
 							[
 								{ text: 'Отмена', style: 'cancel' },
 								{
@@ -75,41 +79,66 @@ export default function GroupsIndexScreen() {
 		[deleteGroup, showActionSheetWithOptions],
 	);
 
-	const renderItem = ({
-		item,
-		onDragStart,
-		isActive,
-	}: DragListRenderItemInfo<Group>) => {
-		return (
+	const renderItem = useCallback(
+		({ item, onDragStart, isActive }: DragListRenderItemInfo<Group>) => {
+			return (
+				<TouchableOpacity
+					activeOpacity={0.8}
+					style={[styles.rowItem, isActive && styles.rowItemActive]}
+					onPress={() => router.push(`/groups/${item.id}`)}
+				>
+					<TouchableOpacity
+						style={styles.dragHandle}
+						onPressIn={onDragStart}
+						hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+					>
+						<Ionicons
+							name='reorder-two'
+							size={24}
+							color={colors.textSecondary}
+						/>
+					</TouchableOpacity>
+
+					<Text style={styles.rowTitle}>{item.name}</Text>
+
+					<TouchableOpacity
+						onPress={() => handleOptions(item.id, item.name)}
+						style={styles.optionsHandle}
+						hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+					>
+						<Ionicons
+							name='ellipsis-vertical'
+							size={20}
+							color={colors.textSecondary}
+						/>
+					</TouchableOpacity>
+				</TouchableOpacity>
+			);
+		},
+		[handleOptions],
+	);
+
+	const renderEmpty = useCallback(
+		() => (
+			<View style={styles.emptyContainer}>
+				<Text style={styles.emptyText}>У вас пока нет созданных групп.</Text>
+			</View>
+		),
+		[],
+	);
+
+	const renderFooter = useCallback(
+		() => (
 			<TouchableOpacity
-				activeOpacity={0.8}
-				style={[styles.rowItem, isActive && styles.rowItemActive]}
-				onPress={() => router.push(`/groups/${item.id}`)}
+				style={styles.createButton}
+				onPress={() => router.push('/groups/new')}
 			>
-				<TouchableOpacity
-					style={styles.dragHandle}
-					onPressIn={onDragStart}
-					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-				>
-					<Ionicons name='reorder-two' size={24} color={colors.textSecondary} />
-				</TouchableOpacity>
-
-				<Text style={styles.rowTitle}>{item.name}</Text>
-
-				<TouchableOpacity
-					onPress={() => handleOptions(item.id, item.name)}
-					style={styles.optionsHandle}
-					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-				>
-					<Ionicons
-						name='ellipsis-vertical'
-						size={20}
-						color={colors.textSecondary}
-					/>
-				</TouchableOpacity>
+				<Ionicons name='add-circle-outline' size={24} color={colors.primary} />
+				<Text style={styles.createButtonText}>Создать новую группу</Text>
 			</TouchableOpacity>
-		);
-	};
+		),
+		[],
+	);
 
 	return (
 		<View style={styles.container}>
@@ -137,35 +166,20 @@ export default function GroupsIndexScreen() {
 				onReordered={handleReorder}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderItem}
-				containerStyle={{ flex: 1 }}
+				containerStyle={styles.dragContainer}
 				contentContainerStyle={styles.listContainer}
-				ListEmptyComponent={
-					<View style={styles.emptyContainer}>
-						<Text style={styles.emptyText}>
-							У вас пока нет созданных групп.
-						</Text>
-					</View>
-				}
-				ListFooterComponent={
-					<TouchableOpacity
-						style={styles.createButton}
-						onPress={() => router.push('/groups/new')}
-					>
-						<Ionicons
-							name='add-circle-outline'
-							size={24}
-							color={colors.primary}
-						/>
-						<Text style={styles.createButtonText}>Создать новую группу</Text>
-					</TouchableOpacity>
-				}
+				ListEmptyComponent={renderEmpty}
+				ListFooterComponent={renderFooter}
 			/>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, backgroundColor: colors.background },
+	container: {
+		flex: 1,
+		backgroundColor: colors.background,
+	},
 	header: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -187,7 +201,9 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 		color: colors.textPrimary,
 	},
-	listContainer: { paddingBottom: 40 },
+	listContainer: {
+		paddingBottom: 40,
+	},
 	rowItem: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -199,16 +215,38 @@ const styles = StyleSheet.create({
 	rowItemActive: {
 		backgroundColor: colors.primaryLight,
 	},
-	dragHandle: { paddingHorizontal: 16, paddingVertical: 8 },
-	rowTitle: { flex: 1, fontSize: 16, color: colors.textPrimary },
-	optionsHandle: { paddingHorizontal: 16, paddingVertical: 8 },
+	dragContainer: { flex: 1 },
+	dragHandle: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
+	rowTitle: {
+		flex: 1,
+		fontSize: 16,
+		color: colors.textPrimary,
+	},
+	optionsHandle: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
 	createButton: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		padding: 16,
 		gap: 8,
 	},
-	createButtonText: { fontSize: 16, color: colors.primary, fontWeight: '500' },
-	emptyContainer: { padding: 40, alignItems: 'center' },
-	emptyText: { color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
+	createButtonText: {
+		fontSize: 16,
+		color: colors.primary,
+		fontWeight: '500',
+	},
+	emptyContainer: {
+		padding: 40,
+		alignItems: 'center',
+	},
+	emptyText: {
+		color: colors.textSecondary,
+		textAlign: 'center',
+		fontSize: 16,
+	},
 });

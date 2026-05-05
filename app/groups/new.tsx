@@ -2,8 +2,8 @@ import { SelectedContactsList } from '@/src/components/contact/SelectedContactsL
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
 	Alert,
 	StyleSheet,
@@ -18,19 +18,36 @@ export default function NewGroupScreen() {
 		useContactStore();
 	const [name, setName] = useState('');
 
-	useFocusEffect(
-		useCallback(() => {
-			setTempSelectedIds([]);
-		}, [setTempSelectedIds]),
-	);
+	useEffect(() => {
+		console.log('[new.tsx] Очистка tempSelectedIds при входе на экран');
+		setTempSelectedIds([]);
+	}, [setTempSelectedIds]);
 
 	const handleSave = async () => {
+		console.log(
+			'[new.tsx] Нажата кнопка сохранить. Имя:',
+			name,
+			'ID контактов:',
+			tempSelectedIds,
+		);
+
 		if (!name.trim()) {
 			Alert.alert('Ошибка', 'Введите название группы');
 			return;
 		}
-		await createGroupWithMembers(name.trim(), tempSelectedIds);
-		router.back();
+
+		try {
+			console.log('[new.tsx] Отправка запроса в store...');
+			await createGroupWithMembers(name.trim(), tempSelectedIds);
+			console.log('[new.tsx] Успешно! Возврат назад.');
+			router.back();
+		} catch (error: any) {
+			console.error('[new.tsx] ОШИБКА СОХРАНЕНИЯ:', error);
+			Alert.alert(
+				'Ошибка сохранения',
+				error.message || 'Не удалось создать группу.',
+			);
+		}
 	};
 
 	const removeContact = (id: number) => {

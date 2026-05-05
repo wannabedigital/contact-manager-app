@@ -47,6 +47,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ contacts: data, isLoading: false });
 		} catch (err) {
 			set({ error: (err as Error).message, isLoading: false });
+			console.error(err);
 		}
 	},
 
@@ -62,6 +63,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
@@ -79,6 +81,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
@@ -91,6 +94,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}));
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
@@ -100,6 +104,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ groups });
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
@@ -111,6 +116,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadGroups();
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
@@ -122,16 +128,18 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 
 	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
 
-	updateGroupsOrder: async (groups) => {
-		set({ groups });
+	updateGroupsOrder: async (newGroups) => {
 		try {
-			await groupRepo.updateOrder(groups);
+			await groupRepo.updateOrder(newGroups);
+			set({ groups: [...newGroups] });
 		} catch (err) {
+			console.error('[STORE] ОШИБКА при сохранении порядка групп:', err);
 			set({ error: (err as Error).message });
 			await get().loadGroups();
 		}
@@ -139,12 +147,19 @@ export const useContactStore = create<State>((set, get) => ({
 
 	createGroupWithMembers: async (name, contactIds) => {
 		try {
+			console.log(`[STORE] Начинаем создание группы "${name}"...`);
 			const newId = await groupRepo.create(name);
+			console.log(`[STORE] Группа успешно создана в БД! Присвоен ID: ${newId}`);
+
+			console.log(`[STORE] Привязываем контакты:`, contactIds);
 			await groupRepo.update(newId, name, contactIds);
 			await get().loadGroups();
 			await get().loadContacts();
+			console.log(`[STORE] Всё успешно завершено!`);
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
+			throw err;
 		}
 	},
 
@@ -155,6 +170,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
+			console.error(err);
 		}
 	},
 }));

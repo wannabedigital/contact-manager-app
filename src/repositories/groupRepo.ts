@@ -5,23 +5,31 @@ export const groupRepo = {
 	async getAll(): Promise<Group[]> {
 		const db = await getDatabase();
 		return (await db.getAllAsync(
-			'SELECT * FROM groups ORDER BY ORDER BY sort_order ASC, created_at ASC',
+			'SELECT * FROM groups ORDER BY sort_order',
 		)) as Group[];
 	},
 
 	async create(name: string): Promise<number> {
-		const db = await getDatabase();
-		const maxOrderRes: any = await db.getFirstAsync(
-			'SELECT MAX(sort_order) as maxOrder FROM groups',
-		);
-		const nextOrder = (maxOrderRes?.maxOrder ?? 0) + 1;
+		try {
+			const db = await getDatabase();
+			const maxOrderRes: any = await db.getFirstAsync(
+				'SELECT MAX(sort_order) as maxOrder FROM groups',
+			);
+			const nextOrder = (maxOrderRes?.maxOrder ?? 0) + 1;
 
-		const result = await db.runAsync(
-			'INSERT INTO groups (name, sort_order) VALUES (?, ?)',
-			name,
-			nextOrder,
-		);
-		return result.lastInsertRowId as number;
+			console.log(
+				`[REPO] SQL INSERT INTO groups: name=${name}, sort_order=${nextOrder}`,
+			);
+			const result = await db.runAsync(
+				'INSERT INTO groups (name, sort_order) VALUES (?, ?)',
+				name,
+				nextOrder,
+			);
+			return result.lastInsertRowId as number;
+		} catch (e) {
+			console.error('[REPO] ОШИБКА ПРИ INSERT ГРУППЫ:', e);
+			throw e;
+		}
 	},
 
 	async updateOrder(groups: Group[]): Promise<void> {

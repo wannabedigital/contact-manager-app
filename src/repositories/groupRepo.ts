@@ -5,7 +5,7 @@ export const groupRepo = {
 	async getAll(): Promise<Group[]> {
 		const db = await getDatabase();
 		return (await db.getAllAsync(
-			'SELECT * FROM groups ORDER BY sort_order ASC, created_at ASC',
+			'SELECT * FROM groups ORDER BY sort_order',
 		)) as Group[];
 	},
 

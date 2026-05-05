@@ -22,7 +22,6 @@ type State = {
 
 	tempSelectedIds: number[];
 	setTempSelectedIds: (ids: number[]) => void;
-	setGroupsOrderLocally: (groups: Group[]) => void;
 	updateGroupsOrder: (groups: Group[]) => Promise<void>;
 
 	createGroupWithMembers: (name: string, contactIds: number[]) => Promise<void>;
@@ -135,11 +134,10 @@ export const useContactStore = create<State>((set, get) => ({
 
 	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
 
-	setGroupsOrderLocally: (newGroups) => set({ groups: newGroups }),
-
 	updateGroupsOrder: async (newGroups) => {
 		try {
 			await groupRepo.updateOrder(newGroups);
+			set({ groups: [...newGroups] });
 		} catch (err) {
 			console.error('[STORE] ОШИБКА при сохранении порядка групп:', err);
 			set({ error: (err as Error).message });

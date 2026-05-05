@@ -5,21 +5,17 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import DraggableFlatList, {
-	RenderItemParams,
-} from 'react-native-draggable-flatlist';
+
+import DragList, { DragListRenderItemInfo } from 'react-native-draglist';
+
 import { Group } from '@/src/types/contact';
 
 export default function GroupsIndexScreen() {
 	const { showActionSheetWithOptions } = useActionSheet();
 
-	const {
-		groups,
-		loadGroups,
-		updateGroupsOrder,
-		deleteGroup,
-		setGroupsOrderLocally,
-	} = useContactStore();
+	const { groups, loadGroups, updateGroupsOrder, deleteGroup } =
+		useContactStore();
+	const [localGroups, setLocalGroups] = useState<Group[]>([]);
 	const [isReordered, setIsReordered] = useState(false);
 
 	useEffect(() => {
@@ -27,12 +23,23 @@ export default function GroupsIndexScreen() {
 	}, [loadGroups]);
 
 	useEffect(() => {
-		const ids = groups.map((g) => g.id);
-		console.warn('[DEBUG] groups в сторе:', ids);
-	}, [groups]);
+		if (!isReordered && groups.length > 0) {
+			setLocalGroups(groups);
+		}
+	}, [groups, isReordered]);
 
-	const handleSaveOrder = () => {
-		updateGroupsOrder(groups);
+	const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
+		setLocalGroups((prev) => {
+			const newList = [...prev];
+			const [movedItem] = newList.splice(fromIndex, 1);
+			newList.splice(toIndex, 0, movedItem);
+			return newList;
+		});
+		setIsReordered(true);
+	}, []);
+
+	const handleSaveOrder = async () => {
+		await updateGroupsOrder(localGroups);
 		setIsReordered(false);
 	};
 
@@ -68,7 +75,11 @@ export default function GroupsIndexScreen() {
 		[deleteGroup, showActionSheetWithOptions],
 	);
 
-	const renderItem = ({ item, drag, isActive }: RenderItemParams<Group>) => {
+	const renderItem = ({
+		item,
+		onDragStart,
+		isActive,
+	}: DragListRenderItemInfo<Group>) => {
 		return (
 			<TouchableOpacity
 				activeOpacity={0.8}
@@ -77,7 +88,7 @@ export default function GroupsIndexScreen() {
 			>
 				<TouchableOpacity
 					style={styles.dragHandle}
-					onPressIn={drag}
+					onPressIn={onDragStart}
 					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 				>
 					<Ionicons name='reorder-two' size={24} color={colors.textSecondary} />
@@ -121,16 +132,9 @@ export default function GroupsIndexScreen() {
 				</View>
 			</View>
 
-			<DraggableFlatList
-				data={groups}
-				onDragEnd={({ data }) => {
-					const ids = data.map((g) => g.id);
-					console.warn('[DEBUG] onDragEnd вызван, порядок:', ids);
-
-					setGroupsOrderLocally(data);
-					setIsReordered(true);
-				}}
-				removeClippedSubviews={false}
+			<DragList
+				data={localGroups}
+				onReordered={handleReorder}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderItem}
 				containerStyle={{ flex: 1 }}

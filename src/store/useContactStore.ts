@@ -86,15 +86,19 @@ export const useContactStore = create<State>((set, get) => ({
 	},
 
 	deleteContact: async (id) => {
-		try {
-			await contactRepo.delete(id);
-			set((state) => ({
-				contacts: state.contacts.filter((c) => c.id !== id),
+		{
+			const previousContacts = get().contacts;
+			set({
+				contacts: previousContacts.filter((c) => c.id !== id),
 				error: null,
-			}));
-		} catch (err) {
-			set({ error: (err as Error).message });
-			console.error(err);
+			});
+
+			try {
+				await contactRepo.delete(id);
+			} catch (err) {
+				set({ contacts: previousContacts, error: (err as Error).message });
+				console.error('[STORE] Ошибка при удалении контакта:', err);
+			}
 		}
 	},
 
@@ -121,27 +125,41 @@ export const useContactStore = create<State>((set, get) => ({
 	},
 
 	deleteGroup: async (id) => {
+		const previousGroups = get().groups;
+		const previousSelectedGroupId = get().selectedGroupId;
+		set({
+			groups: previousGroups.filter((g) => g.id !== id),
+			selectedGroupId:
+				previousSelectedGroupId === id ? null : previousSelectedGroupId,
+			error: null,
+		});
+
 		try {
 			await groupRepo.delete(id);
-			if (get().selectedGroupId === id) set({ selectedGroupId: null });
-			await get().loadGroups();
+
 			await get().loadContacts();
 		} catch (err) {
-			set({ error: (err as Error).message });
-			console.error(err);
+			set({
+				groups: previousGroups,
+				selectedGroupId: previousSelectedGroupId,
+				error: (err as Error).message,
+			});
+			console.error('[STORE] Ошибка при удалении группы:', err);
 		}
 	},
 
 	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
 
 	updateGroupsOrder: async (newGroups) => {
+		const previousGroups = get().groups;
+
+		set({ groups: [...newGroups], error: null });
+
 		try {
 			await groupRepo.updateOrder(newGroups);
-			set({ groups: [...newGroups] });
 		} catch (err) {
-			console.error('[STORE] ОШИБКА при сохранении порядка групп:', err);
-			set({ error: (err as Error).message });
-			await get().loadGroups();
+			console.error('[STORE] Ошибка при сохранении порядка групп:', err);
+			set({ groups: previousGroups, error: (err as Error).message });
 		}
 	},
 

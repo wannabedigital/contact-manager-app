@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
 		paddingTop: 44,
 		paddingBottom: 16,
 		backgroundColor: colors.surface,
-		borderBottomWidth: 1,
+		borderBottomWidth: 2,
 		borderBottomColor: colors.divider,
 	},
 	headerTitle: {
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
 		color: colors.textPrimary,
 	},
 	content: {
-		marginTop: 8,
+		marginTop: 4,
 	},
 	menuItem: {
 		flexDirection: 'row',

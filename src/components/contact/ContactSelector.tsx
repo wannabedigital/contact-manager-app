@@ -10,6 +10,7 @@ import {
 	Text,
 	TouchableOpacity,
 	View,
+	Image,
 } from 'react-native';
 
 interface ContactSelectorProps {
@@ -122,8 +123,15 @@ export const ContactSelector = ({
 							onPress={() => toggleContact(item.id)}
 							activeOpacity={0.7}
 						>
-							<View style={styles.avatarPlaceholder}>
-								<Ionicons name='person' size={20} color={colors.primary} />
+							<View style={styles.avatar}>
+								{item.photo_uri ? (
+									<Image
+										source={{ uri: item.photo_uri }}
+										style={styles.avatarImage}
+									/>
+								) : (
+									<Ionicons name='person' size={20} color={colors.primary} />
+								)}
 							</View>
 							<View style={styles.listTextContainer}>
 								<Text style={styles.listName}>
@@ -208,7 +216,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		backgroundColor: colors.surface,
 	},
-	avatarPlaceholder: {
+	avatar: {
 		width: 40,
 		height: 40,
 		borderRadius: 20,
@@ -216,6 +224,12 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 12,
+		borderWidth: 2,
+		borderColor: colors.divider,
+	},
+	avatarImage: {
+		width: '100%',
+		height: '100%',
 	},
 	listTextContainer: { flex: 1 },
 	listName: {

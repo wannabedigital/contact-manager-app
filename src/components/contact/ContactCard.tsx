@@ -1,8 +1,7 @@
 import { colors } from '@/src/constants/colors';
+import { useContactActions } from '@/src/hooks/useContactActions';
 import { Contact } from '@/src/types/contact';
-import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -11,73 +10,20 @@ type Props = {
 };
 
 export const ContactCard = ({ contact }: Props) => {
-	const { showActionSheetWithOptions } = useActionSheet();
 	const router = useRouter();
 
-	const handlePhonePress = () => {
-		const phones = contact.phones?.filter((p) => p.phone_number.trim()) || [];
-		if (phones.length === 0) return;
-
-		if (phones.length === 1) {
-			const number = phones[0].phone_number.replace(/\D/g, '');
-			Linking.openURL(`tel:${number}`);
-		} else {
-			const options = [
-				...phones.map((p) => `${p.phone_number} (${p.type})`),
-				'Отмена',
-			];
-			const cancelButtonIndex = options.length - 1;
-
-			showActionSheetWithOptions(
-				{ options, cancelButtonIndex, title: 'Выберите номер' },
-				(selectedIndex) => {
-					if (
-						selectedIndex !== undefined &&
-						selectedIndex !== cancelButtonIndex
-					) {
-						const phone = phones[selectedIndex];
-						const number = phone.phone_number.replace(/\D/g, '');
-						Linking.openURL(`tel:${number}`);
-					}
-				},
-			);
-		}
-	};
-
-	const handleEmailPress = () => {
-		const emails = contact.emails?.filter((e) => e.email_address.trim()) || [];
-		if (emails.length === 0) return;
-
-		if (emails.length === 1) {
-			Linking.openURL(`mailto:${emails[0].email_address}`);
-		} else {
-			const options = [
-				...emails.map((e) => `${e.email_address} (${e.type})`),
-				'Отмена',
-			];
-			const cancelButtonIndex = options.length - 1;
-
-			showActionSheetWithOptions(
-				{ options, cancelButtonIndex, title: 'Выберите email' },
-				(selectedIndex) => {
-					if (
-						selectedIndex !== undefined &&
-						selectedIndex !== cancelButtonIndex
-					) {
-						const email = emails[selectedIndex];
-						Linking.openURL(`mailto:${email.email_address}`);
-					}
-				},
-			);
-		}
-	};
+	const { handleCall, handleEmail } = useContactActions();
 
 	const handleCardPress = () => {
 		router.push(`/contact/${contact.id}`);
 	};
 
-	const hasPhones = contact.phones && contact.phones.length > 0;
-	const hasEmails = contact.emails && contact.emails.length > 0;
+	const activePhones =
+		contact.phones?.filter((p) => p.phone_number.trim()) || [];
+	const activeEmails =
+		contact.emails?.filter((e) => e.email_address.trim()) || [];
+	const hasPhones = activePhones.length > 0;
+	const hasEmails = activeEmails.length > 0;
 
 	return (
 		<TouchableOpacity
@@ -109,7 +55,7 @@ export const ContactCard = ({ contact }: Props) => {
 						style={styles.actionButton}
 						onPress={(e) => {
 							e.stopPropagation();
-							handleEmailPress();
+							handleEmail(activeEmails);
 						}}
 					>
 						<Ionicons name='mail-outline' size={32} color={colors.primary} />
@@ -120,7 +66,7 @@ export const ContactCard = ({ contact }: Props) => {
 						style={styles.actionButton}
 						onPress={(e) => {
 							e.stopPropagation();
-							handlePhonePress();
+							handleCall(activePhones);
 						}}
 					>
 						<Ionicons name='call-outline' size={32} color={colors.primary} />

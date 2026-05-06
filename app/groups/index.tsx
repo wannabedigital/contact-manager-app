@@ -29,6 +29,7 @@ export default function GroupsIndexScreen() {
 		if (!isReordered && groups.length > 0) {
 			setLocalGroups(groups);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [groups]);
 
 	const handleReorder = useCallback((fromIndex: number, toIndex: number) => {

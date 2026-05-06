@@ -47,7 +47,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ contacts: data, isLoading: false });
 		} catch (err) {
 			set({ error: (err as Error).message, isLoading: false });
-			console.error(err);
+			console.error('[STORE] Ошибка при загрузке контактов:', err);
 		}
 	},
 
@@ -63,7 +63,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при добавлении контакта:', err);
 		}
 	},
 
@@ -81,7 +81,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при обновлении контакта:', err);
 		}
 	},
 
@@ -108,7 +108,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ groups });
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при загрузке групп:', err);
 		}
 	},
 
@@ -120,7 +120,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadGroups();
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при добавлении группы:', err);
 		}
 	},
 
@@ -158,8 +158,8 @@ export const useContactStore = create<State>((set, get) => ({
 		try {
 			await groupRepo.updateOrder(newGroups);
 		} catch (err) {
-			console.error('[STORE] Ошибка при сохранении порядка групп:', err);
 			set({ groups: previousGroups, error: (err as Error).message });
+			console.error('[STORE] Ошибка при сохранении порядка групп:', err);
 		}
 	},
 
@@ -172,7 +172,6 @@ export const useContactStore = create<State>((set, get) => ({
 		} catch (err) {
 			set({ error: (err as Error).message });
 			console.error('[STORE] ОШИБКА при создании группы с контактами:', err);
-			throw err;
 		}
 	},
 

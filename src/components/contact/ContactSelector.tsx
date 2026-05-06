@@ -27,7 +27,6 @@ export const ContactSelector = ({
 }: ContactSelectorProps) => {
 	const { contacts } = useContactStore();
 
-	// Локальный буфер внутри компонента
 	const [selectedIds, setSelectedIds] = useState<number[]>(initialSelectedIds);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [chipToDelete, setChipToDelete] = useState<number | null>(null);
@@ -67,7 +66,6 @@ export const ContactSelector = ({
 
 	return (
 		<View style={styles.container}>
-			{/* Шапка теперь внутри компонента */}
 			<View style={styles.header}>
 				<TouchableOpacity onPress={onCancel} style={styles.headerButton}>
 					<Ionicons name='close' size={28} color={colors.error} />

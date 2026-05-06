@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
 		color: colors.textPrimary,
 	},
 	content: {
-		marginTop: 20,
+		marginTop: 8,
 	},
 	menuItem: {
 		flexDirection: 'row',

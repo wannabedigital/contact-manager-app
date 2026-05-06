@@ -147,18 +147,13 @@ export const useContactStore = create<State>((set, get) => ({
 
 	createGroupWithMembers: async (name, contactIds) => {
 		try {
-			console.log(`[STORE] Начинаем создание группы "${name}"...`);
 			const newId = await groupRepo.create(name);
-			console.log(`[STORE] Группа успешно создана в БД! Присвоен ID: ${newId}`);
-
-			console.log(`[STORE] Привязываем контакты:`, contactIds);
 			await groupRepo.update(newId, name, contactIds);
 			await get().loadGroups();
 			await get().loadContacts();
-			console.log(`[STORE] Всё успешно завершено!`);
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] ОШИБКА при создании группы с контактами:', err);
 			throw err;
 		}
 	},
@@ -170,7 +165,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] ОШИБКА при обновлении группы:', err);
 		}
 	},
 }));

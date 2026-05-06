@@ -23,6 +23,13 @@ import {
 	View,
 } from 'react-native';
 
+import {
+	validateEmail,
+	validatePhone,
+	validateDate,
+} from '@/src/utils/validation';
+import { sanitizePhone, formatDate } from '@/src/utils/formatters';
+
 type PhoneField = {
 	id: string;
 	phone_number: string;
@@ -262,43 +269,6 @@ export const ContactForm = ({
 			console.error('Ошибка сохранения:', error);
 			Alert.alert('Ошибка', 'Не удалось обновить контакт');
 		}
-	};
-
-	const sanitizePhone = (value: string): string => {
-		return value.replace(/\D/g, '');
-	};
-
-	const validatePhone = (value: string): boolean => {
-		const allowedChars = /^[0-9+\-() ]*$/;
-		if (!allowedChars.test(value)) return false;
-
-		const digits = value.replace(/\D/g, '');
-		return digits.length > 0 && digits.length <= 15;
-	};
-
-	const formatDate = (value: string): string => {
-		const digits = value.replace(/\D/g, '');
-		let formatted = '';
-		if (digits.length > 0) formatted += digits.slice(0, 2);
-		if (digits.length >= 3) formatted += '.' + digits.slice(2, 4);
-		if (digits.length >= 5) formatted += '.' + digits.slice(4, 8);
-		return formatted;
-	};
-
-	const validateDate = (value: string): boolean => {
-		if (!/^\d{2}\.\d{2}\.\d{4}$/.test(value)) return false;
-		const [day, month, year] = value.split('.').map(Number);
-		const date = new Date(year, month - 1, day);
-		return (
-			date.getFullYear() === year &&
-			date.getMonth() === month - 1 &&
-			date.getDate() === day
-		);
-	};
-
-	const validateEmail = (value: string): boolean => {
-		const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return regex.test(value);
 	};
 
 	const updateDateFormatted = (value: string) => {

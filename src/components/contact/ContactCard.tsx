@@ -46,7 +46,9 @@ export const ContactCard = ({ contact }: Props) => {
 				<Text style={styles.name}>
 					{contact.first_name} {contact.last_name}
 				</Text>
-				<Text style={styles.company}>{contact.company || ''}</Text>
+				<Text style={styles.company}>
+					{contact.patronymic || contact.company || ''}
+				</Text>
 			</View>
 
 			<View style={styles.actions}>
@@ -80,7 +82,8 @@ export const ContactCard = ({ contact }: Props) => {
 const styles = StyleSheet.create({
 	container: {
 		flexDirection: 'row',
-		padding: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
 		alignItems: 'center',
 		backgroundColor: colors.surface,
 		borderRadius: 8,

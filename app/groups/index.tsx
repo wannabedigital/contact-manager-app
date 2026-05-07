@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,13 +24,12 @@ export default function GroupsIndexScreen() {
 
 	useEffect(() => {
 		loadGroups();
-	}, [loadGroups]);
+	}, []);
 
 	useEffect(() => {
 		if (!isReordered && groups.length > 0) {
 			setLocalGroups(groups);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [groups]);
 
 	const handleReorder = useCallback((fromIndex: number, toIndex: number) => {

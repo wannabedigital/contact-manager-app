@@ -213,7 +213,8 @@ const styles = StyleSheet.create({
 	listItem: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		padding: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
 		backgroundColor: colors.surface,
 	},
 	avatar: {

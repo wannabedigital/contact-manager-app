@@ -1,3 +1,4 @@
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getDatabase } from '@/src/database/database';
 import { runMigrations } from '@/src/database/migrations';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
@@ -25,8 +26,10 @@ export default function RootLayout() {
 	if (!ready) return null;
 
 	return (
-		<ActionSheetProvider>
-			<Stack screenOptions={{ headerShown: false }} />
-		</ActionSheetProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<ActionSheetProvider>
+				<Stack screenOptions={{ headerShown: false }} />
+			</ActionSheetProvider>
+		</GestureHandlerRootView>
 	);
 }

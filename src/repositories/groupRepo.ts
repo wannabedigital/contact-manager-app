@@ -16,10 +16,6 @@ export const groupRepo = {
 				'SELECT MAX(sort_order) as maxOrder FROM groups',
 			);
 			const nextOrder = (maxOrderRes?.maxOrder ?? 0) + 1;
-
-			console.log(
-				`[REPO] SQL INSERT INTO groups: name=${name}, sort_order=${nextOrder}`,
-			);
 			const result = await db.runAsync(
 				'INSERT INTO groups (name, sort_order) VALUES (?, ?)',
 				name,

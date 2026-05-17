@@ -47,7 +47,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ contacts: data, isLoading: false });
 		} catch (err) {
 			set({ error: (err as Error).message, isLoading: false });
-			console.error(err);
+			console.error('[STORE] Ошибка при загрузке контактов:', err);
 		}
 	},
 
@@ -63,7 +63,7 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при добавлении контакта:', err);
 		}
 	},
 
@@ -81,20 +81,24 @@ export const useContactStore = create<State>((set, get) => ({
 			}
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при обновлении контакта:', err);
 		}
 	},
 
 	deleteContact: async (id) => {
-		try {
-			await contactRepo.delete(id);
-			set((state) => ({
-				contacts: state.contacts.filter((c) => c.id !== id),
+		{
+			const previousContacts = get().contacts;
+			set({
+				contacts: previousContacts.filter((c) => c.id !== id),
 				error: null,
-			}));
-		} catch (err) {
-			set({ error: (err as Error).message });
-			console.error(err);
+			});
+
+			try {
+				await contactRepo.delete(id);
+			} catch (err) {
+				set({ contacts: previousContacts, error: (err as Error).message });
+				console.error('[STORE] Ошибка при удалении контакта:', err);
+			}
 		}
 	},
 
@@ -104,7 +108,7 @@ export const useContactStore = create<State>((set, get) => ({
 			set({ groups });
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при загрузке групп:', err);
 		}
 	},
 
@@ -116,50 +120,58 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadGroups();
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] Ошибка при добавлении группы:', err);
 		}
 	},
 
 	deleteGroup: async (id) => {
+		const previousGroups = get().groups;
+		const previousSelectedGroupId = get().selectedGroupId;
+		set({
+			groups: previousGroups.filter((g) => g.id !== id),
+			selectedGroupId:
+				previousSelectedGroupId === id ? null : previousSelectedGroupId,
+			error: null,
+		});
+
 		try {
 			await groupRepo.delete(id);
-			if (get().selectedGroupId === id) set({ selectedGroupId: null });
-			await get().loadGroups();
+
 			await get().loadContacts();
 		} catch (err) {
-			set({ error: (err as Error).message });
-			console.error(err);
+			set({
+				groups: previousGroups,
+				selectedGroupId: previousSelectedGroupId,
+				error: (err as Error).message,
+			});
+			console.error('[STORE] Ошибка при удалении группы:', err);
 		}
 	},
 
 	setTempSelectedIds: (ids) => set({ tempSelectedIds: ids }),
 
 	updateGroupsOrder: async (newGroups) => {
+		const previousGroups = get().groups;
+
+		set({ groups: [...newGroups], error: null });
+
 		try {
 			await groupRepo.updateOrder(newGroups);
-			set({ groups: [...newGroups] });
 		} catch (err) {
-			console.error('[STORE] ОШИБКА при сохранении порядка групп:', err);
-			set({ error: (err as Error).message });
-			await get().loadGroups();
+			set({ groups: previousGroups, error: (err as Error).message });
+			console.error('[STORE] Ошибка при сохранении порядка групп:', err);
 		}
 	},
 
 	createGroupWithMembers: async (name, contactIds) => {
 		try {
-			console.log(`[STORE] Начинаем создание группы "${name}"...`);
 			const newId = await groupRepo.create(name);
-			console.log(`[STORE] Группа успешно создана в БД! Присвоен ID: ${newId}`);
-
-			console.log(`[STORE] Привязываем контакты:`, contactIds);
 			await groupRepo.update(newId, name, contactIds);
 			await get().loadGroups();
 			await get().loadContacts();
-			console.log(`[STORE] Всё успешно завершено!`);
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
-			throw err;
+			console.error('[STORE] ОШИБКА при создании группы с контактами:', err);
 		}
 	},
 
@@ -170,7 +182,7 @@ export const useContactStore = create<State>((set, get) => ({
 			await get().loadContacts();
 		} catch (err) {
 			set({ error: (err as Error).message });
-			console.error(err);
+			console.error('[STORE] ОШИБКА при обновлении группы:', err);
 		}
 	},
 }));

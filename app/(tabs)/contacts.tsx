@@ -1,5 +1,5 @@
 import { ContactCard } from '@/src/components/contact/ContactCard';
-import { GroupChips } from '@/src/components/contact/GroupChips';
+import { GroupChips } from '@/src/components/group/GroupChips';
 import { SearchBar } from '@/src/components/ui/SearchBar';
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';

@@ -10,6 +10,7 @@ import {
 	Text,
 	TouchableOpacity,
 	View,
+	Image,
 } from 'react-native';
 
 interface ContactSelectorProps {
@@ -27,7 +28,6 @@ export const ContactSelector = ({
 }: ContactSelectorProps) => {
 	const { contacts } = useContactStore();
 
-	// Локальный буфер внутри компонента
 	const [selectedIds, setSelectedIds] = useState<number[]>(initialSelectedIds);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [chipToDelete, setChipToDelete] = useState<number | null>(null);
@@ -67,7 +67,6 @@ export const ContactSelector = ({
 
 	return (
 		<View style={styles.container}>
-			{/* Шапка теперь внутри компонента */}
 			<View style={styles.header}>
 				<TouchableOpacity onPress={onCancel} style={styles.headerButton}>
 					<Ionicons name='close' size={28} color={colors.error} />
@@ -124,8 +123,15 @@ export const ContactSelector = ({
 							onPress={() => toggleContact(item.id)}
 							activeOpacity={0.7}
 						>
-							<View style={styles.avatarPlaceholder}>
-								<Ionicons name='person' size={20} color={colors.primary} />
+							<View style={styles.avatar}>
+								{item.photo_uri ? (
+									<Image
+										source={{ uri: item.photo_uri }}
+										style={styles.avatarImage}
+									/>
+								) : (
+									<Ionicons name='person' size={20} color={colors.primary} />
+								)}
 							</View>
 							<View style={styles.listTextContainer}>
 								<Text style={styles.listName}>
@@ -207,17 +213,25 @@ const styles = StyleSheet.create({
 	listItem: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		padding: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
 		backgroundColor: colors.surface,
 	},
-	avatarPlaceholder: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
+	avatar: {
+		width: 48,
+		height: 48,
+		borderRadius: 36,
 		backgroundColor: colors.background,
 		justifyContent: 'center',
 		alignItems: 'center',
-		marginRight: 12,
+		marginRight: 16,
+		borderWidth: 2,
+		borderColor: colors.divider,
+		overflow: 'hidden',
+	},
+	avatarImage: {
+		width: '100%',
+		height: '100%',
 	},
 	listTextContainer: { flex: 1 },
 	listName: {

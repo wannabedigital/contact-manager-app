@@ -1,31 +1,52 @@
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
+import { router } from 'expo-router';
 import React from 'react';
 import {
-	Alert,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from 'react-native';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 
 export const GroupChips = () => {
 	const { groups, selectedGroupId, setSelectedGroupId, deleteGroup } =
 		useContactStore();
 
+	const { showActionSheetWithOptions } = useActionSheet();
+
 	const handleLongPress = (id: number, name: string) => {
-		Alert.alert(
-			'Управление группой',
-			`Что вы хотите сделать с группой "${name}"?`,
-			[
-				{ text: 'Отмена', style: 'cancel' },
-				{
-					text: 'Удалить',
-					style: 'destructive',
-					onPress: () => deleteGroup(id),
-				},
-			],
+		const options = [
+			'Настроить порядок',
+			'Изменить группу',
+			'Удалить группу',
+			'Отмена',
+		];
+		const destructiveButtonIndex = 2;
+		const cancelButtonIndex = 3;
+
+		showActionSheetWithOptions(
+			{
+				options,
+				cancelButtonIndex,
+				destructiveButtonIndex,
+				title: `Управление группой "${name}"`,
+			},
+			(selectedIndex) => {
+				switch (selectedIndex) {
+					case 0:
+						router.push(`/groups`);
+						break;
+					case 1:
+						router.push(`/groups/${id}`);
+						break;
+					case 2:
+						deleteGroup(id);
+						break;
+				}
+			},
 		);
 	};
 

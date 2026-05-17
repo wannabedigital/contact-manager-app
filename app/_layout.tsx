@@ -1,7 +1,7 @@
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getDatabase } from '@/src/database/database';
 import { runMigrations } from '@/src/database/migrations';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 

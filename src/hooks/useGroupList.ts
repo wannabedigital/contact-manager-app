@@ -15,32 +15,29 @@ export const useGroupList = () => {
 	const deleteGroup = useContactStore((state) => state.deleteGroup);
 
 	const [localGroups, setLocalGroups] = useState<Group[]>([]);
-	const [isReordered, setIsReordered] = useState(false);
 
 	useEffect(() => {
 		loadGroups();
 	}, [loadGroups]);
 
 	useEffect(() => {
-		if (!isReordered && groups.length > 0) {
-			setLocalGroups(groups);
-		}
-	}, [groups, isReordered]);
+		setLocalGroups(groups);
+	}, [groups]);
 
-	const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
-		setLocalGroups((prev) => {
-			const newList = [...prev];
-			const [movedItem] = newList.splice(fromIndex, 1);
-			newList.splice(toIndex, 0, movedItem);
-			return newList;
-		});
-		setIsReordered(true);
-	}, []);
+	const handleReorder = useCallback(
+		(fromIndex: number, toIndex: number) => {
+			setLocalGroups((prev) => {
+				const newList = [...prev];
+				const [movedItem] = newList.splice(fromIndex, 1);
+				newList.splice(toIndex, 0, movedItem);
 
-	const handleSaveOrder = async () => {
-		setIsReordered(false);
-		await updateGroupsOrder(localGroups);
-	};
+				updateGroupsOrder(newList);
+
+				return newList;
+			});
+		},
+		[updateGroupsOrder],
+	);
 
 	const handleOptions = useCallback(
 		(id: number, name: string) => {
@@ -76,9 +73,7 @@ export const useGroupList = () => {
 
 	return {
 		localGroups,
-		isReordered,
 		handleReorder,
-		handleSaveOrder,
 		handleOptions,
 	};
 };

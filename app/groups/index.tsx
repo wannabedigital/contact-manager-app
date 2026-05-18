@@ -9,13 +9,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DragList, { DragListRenderItemInfo } from 'react-native-draglist';
 
 export default function GroupsIndexScreen() {
-	const {
-		localGroups,
-		isReordered,
-		handleReorder,
-		handleSaveOrder,
-		handleOptions,
-	} = useGroupList();
+	const { localGroups, handleReorder, handleOptions } = useGroupList();
 
 	const renderItem = useCallback(
 		({ item, onDragStart, isActive }: DragListRenderItemInfo<Group>) => {
@@ -66,13 +60,7 @@ export default function GroupsIndexScreen() {
 
 				<Text style={styles.headerTitle}>Настройки групп</Text>
 
-				<View style={styles.headerButton}>
-					{isReordered && (
-						<TouchableOpacity onPress={handleSaveOrder}>
-							<Ionicons name='checkmark' size={24} color={colors.success} />
-						</TouchableOpacity>
-					)}
-				</View>
+				<View style={styles.headerButton} />
 			</View>
 
 			<DragList

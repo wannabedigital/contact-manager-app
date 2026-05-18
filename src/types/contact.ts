@@ -66,8 +66,8 @@ export type ContactInput = {
 	date_of_birth?: string;
 	notes?: string;
 	photo_uri?: string;
-	phones?: Omit<Phone, 'id' | 'contact_id'>[];
-	emails?: Omit<Email, 'id' | 'contact_id'>[];
-	addresses?: Omit<Address, 'id' | 'contact_id'>[];
+	phones?: (Omit<Phone, 'contact_id'> & { id?: number })[];
+	emails?: (Omit<Email, 'contact_id'> & { id?: number })[];
+	addresses?: (Omit<Address, 'contact_id'> & { id?: number })[];
 	groupIds?: number[];
 };

@@ -11,35 +11,27 @@ import {
 export const contactRepo = {
 	async getAll(): Promise<Contact[]> {
 		const db = await getDatabase();
+
 		const contacts = (await db.getAllAsync(
 			'SELECT * FROM contacts ORDER BY first_name, last_name',
 		)) as Contact[];
 
 		if (contacts.length === 0) return [];
 
-		const contactIds = contacts.map((c) => c.id);
-
 		const phones = (await db.getAllAsync(
-			`SELECT * FROM contact_phones WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_phones',
 		)) as Phone[];
-
 		const emails = (await db.getAllAsync(
-			`SELECT * FROM contact_emails WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_emails',
 		)) as Email[];
-
 		const addresses = (await db.getAllAsync(
-			`SELECT * FROM contact_addresses WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_addresses',
 		)) as Address[];
 
 		const groupsRaw = (await db.getAllAsync(
-			`SELECT cg.contact_id, g.id, g.name, g.created_at
-           FROM contact_groups cg
-           JOIN groups g ON cg.group_id = g.id
-           WHERE cg.contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			`SELECT cg.contact_id, g.id, g.name, g.sort_order, g.created_at
+	         FROM contact_groups cg
+	         JOIN groups g ON cg.group_id = g.id`,
 		)) as (Group & { contact_id: number })[];
 
 		const phonesMap = new Map<number, Phone[]>();
@@ -63,16 +55,13 @@ export const contactRepo = {
 		const groupsMap = new Map<number, Group[]>();
 		groupsRaw.forEach((g) => {
 			if (!groupsMap.has(g.contact_id)) groupsMap.set(g.contact_id, []);
-			groupsMap
-				.get(g.contact_id)!
-				.push({
-					id: g.id,
-					name: g.name,
-					sort_order: g.sort_order,
-					created_at: g.created_at,
-				});
+			groupsMap.get(g.contact_id)!.push({
+				id: g.id,
+				name: g.name,
+				sort_order: g.sort_order,
+				created_at: g.created_at,
+			});
 		});
-
 		return contacts.map((c) => ({
 			...c,
 			phones: phonesMap.get(c.id) || [],
@@ -222,58 +211,129 @@ export const contactRepo = {
 			}
 
 			if (phones) {
-				await db.runAsync(
-					'DELETE FROM contact_phones WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_phones WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+
+				const incomingIds = phones
+					.map((p) => p.id)
+					.filter((pId): pId is number => pId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
+				for (const delId of idsToDelete) {
+					await db.runAsync('DELETE FROM contact_phones WHERE id = ?', delId);
+				}
+
 				for (const p of phones) {
-					await db.runAsync(
-						'INSERT INTO contact_phones (contact_id, phone_number, type) VALUES (?, ?, ?)',
-						id,
-						p.phone_number,
-						p.type,
-					);
+					if (p.id) {
+						await db.runAsync(
+							'UPDATE contact_phones SET phone_number = ?, type = ? WHERE id = ?',
+							p.phone_number,
+							p.type,
+							p.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_phones (contact_id, phone_number, type) VALUES (?, ?, ?)',
+							id,
+							p.phone_number,
+							p.type,
+						);
+					}
 				}
 			}
+
 			if (emails) {
-				await db.runAsync(
-					'DELETE FROM contact_emails WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_emails WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+				const incomingIds = emails
+					.map((e) => e.id)
+					.filter((eId): eId is number => eId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
+				for (const delId of idsToDelete) {
+					await db.runAsync('DELETE FROM contact_emails WHERE id = ?', delId);
+				}
+
 				for (const e of emails) {
-					await db.runAsync(
-						'INSERT INTO contact_emails (contact_id, email_address, type) VALUES (?, ?, ?)',
-						id,
-						e.email_address,
-						e.type,
-					);
+					if (e.id) {
+						await db.runAsync(
+							'UPDATE contact_emails SET email_address = ?, type = ? WHERE id = ?',
+							e.email_address,
+							e.type,
+							e.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_emails (contact_id, email_address, type) VALUES (?, ?, ?)',
+							id,
+							e.email_address,
+							e.type,
+						);
+					}
 				}
 			}
+
 			if (addresses) {
-				await db.runAsync(
-					'DELETE FROM contact_addresses WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_addresses WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+				const incomingIds = addresses
+					.map((a) => a.id)
+					.filter((aId): aId is number => aId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
-				for (const a of addresses) {
+				for (const delId of idsToDelete) {
 					await db.runAsync(
-						'INSERT INTO contact_addresses (contact_id, address, type) VALUES (?, ?, ?)',
-						id,
-						a.address,
-						a.type,
+						'DELETE FROM contact_addresses WHERE id = ?',
+						delId,
 					);
 				}
+
+				for (const a of addresses) {
+					if (a.id) {
+						await db.runAsync(
+							'UPDATE contact_addresses SET address = ?, type = ? WHERE id = ?',
+							a.address,
+							a.type,
+							a.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_addresses (contact_id, address, type) VALUES (?, ?, ?)',
+							id,
+							a.address,
+							a.type,
+						);
+					}
+				}
 			}
+
 			if (groupIds) {
 				await db.runAsync(
 					'DELETE FROM contact_groups WHERE contact_id = ?',
 					id,
 				);
-				for (const gId of groupIds)
+				for (const gId of groupIds) {
 					await db.runAsync(
 						'INSERT INTO contact_groups (contact_id, group_id) VALUES (?, ?)',
 						id,
 						gId,
 					);
+				}
 			}
 		});
 	},

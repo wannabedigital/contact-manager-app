@@ -5,7 +5,7 @@ import { Loading } from '@/src/components/ui/Loading';
 import { colors } from '@/src/constants/colors';
 import { useContactActions } from '@/src/hooks/useContactActions';
 import { useContactStore } from '@/src/store/useContactStore';
-import { Contact } from '@/src/types/contact';
+import { Contact } from '@/src/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

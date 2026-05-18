@@ -7,7 +7,7 @@ import {
 	PHONE_TYPES,
 	PhoneType,
 	Group,
-} from '@/src/types/contact';
+} from '@/src/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';

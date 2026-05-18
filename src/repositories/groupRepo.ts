@@ -1,5 +1,5 @@
 import { getDatabase } from '@/src/database/database';
-import { Group } from '@/src/types/contact';
+import { Group } from '@/src/types';
 
 export const groupRepo = {
 	async getAll(): Promise<Group[]> {

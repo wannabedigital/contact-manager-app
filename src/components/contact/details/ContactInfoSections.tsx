@@ -1,5 +1,5 @@
 import { InfoSection } from '@/src/components/contact/details/InfoSection';
-import { Contact } from '@/src/types/contact';
+import { Contact } from '@/src/types';
 
 interface ContactInfoSectionsProps {
 	contact: Contact;

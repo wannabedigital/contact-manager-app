@@ -6,7 +6,7 @@ import {
 	Email,
 	Phone,
 	Group,
-} from '@/src/types/contact';
+} from '@/src/types';
 
 export const contactRepo = {
 	async getAll(): Promise<Contact[]> {

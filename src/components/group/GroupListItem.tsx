@@ -1,5 +1,5 @@
 import { colors } from '@/src/constants/colors';
-import { Group } from '@/src/types/contact';
+import { Group } from '@/src/types';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';

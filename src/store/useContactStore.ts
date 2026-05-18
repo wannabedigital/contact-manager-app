@@ -1,6 +1,6 @@
 import { contactRepo } from '@/src/repositories/contactRepo';
 import { groupRepo } from '@/src/repositories/groupRepo';
-import { Contact, ContactInput, Group } from '@/src/types/contact';
+import { Contact, ContactInput, Group } from '@/src/types';
 import { create } from 'zustand';
 
 type State = {

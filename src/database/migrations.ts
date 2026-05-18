@@ -57,9 +57,34 @@ export async function runMigrations() {
       FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      document_number TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      subject TEXT,
+      amount REAL,
+      status TEXT NOT NULL DEFAULT 'Действующий',
+      file_uri TEXT,
+      notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS contact_documents (
+      contact_id INTEGER NOT NULL,
+      document_id INTEGER NOT NULL,
+      PRIMARY KEY (contact_id, document_id),
+      FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE,
+      FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(first_name, last_name);
     CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company);
     CREATE INDEX IF NOT EXISTS idx_phones_number ON contact_phones(phone_number);
     CREATE INDEX IF NOT EXISTS idx_emails_address ON contact_emails(email_address);
+
+    CREATE INDEX IF NOT EXISTS idx_documents_number ON documents(document_number);
+    CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status);
   `);
 }

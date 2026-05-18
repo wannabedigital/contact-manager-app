@@ -1,5 +1,5 @@
 import { useContactStore } from '@/src/store/useContactStore';
-import { Group } from '@/src/types/contact';
+import { Group } from '@/src/types';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';

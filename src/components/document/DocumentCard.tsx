@@ -1,6 +1,6 @@
 import { colors } from '@/src/constants/colors';
 import { DocumentWithContacts } from '@/src/repositories/documentRepo';
-// import { router } from 'expo-router';
+import { router } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -28,10 +28,7 @@ export const DocumentCard = ({ document }: Props) => {
 		<TouchableOpacity
 			style={styles.card}
 			activeOpacity={0.7}
-			onPress={
-				() => console.log(`/documents/${document.id}`)
-				// router.push(`/documents/${document.id}`)
-			}
+			onPress={() => router.push(`/document/${document.id}`)}
 		>
 			<View style={styles.contentContainer}>
 				<Text style={styles.title} numberOfLines={1}>

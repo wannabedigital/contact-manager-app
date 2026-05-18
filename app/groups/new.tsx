@@ -73,6 +73,7 @@ export default function NewGroupScreen() {
 				<SelectedContactsList
 					selectedIds={tempSelectedIds}
 					onRemove={removeContact}
+					onAddPress={() => router.push('/groups/select-contacts')}
 				/>
 			</View>
 		</View>

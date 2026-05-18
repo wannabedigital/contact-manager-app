@@ -9,7 +9,7 @@ export default function EditDocumentScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
 	const { documents, updateDocument } = useDocumentStore();
-	const { contacts, loadContacts } = useContactStore();
+	const { loadContacts } = useContactStore();
 	const [document, setDocument] = useState<any>(null);
 
 	useEffect(() => {
@@ -31,7 +31,6 @@ export default function EditDocumentScreen() {
 		<DocumentForm
 			title='Редактирование'
 			initialData={document}
-			contacts={contacts}
 			onSave={handleSave}
 			onCancel={() => router.back()}
 		/>

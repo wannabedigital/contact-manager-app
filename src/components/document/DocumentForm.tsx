@@ -1,5 +1,8 @@
 import { colors } from '@/src/constants/colors';
-import { Contact, DOCUMENT_STATUSES, DocumentStatus } from '@/src/types';
+import { useRouter } from 'expo-router';
+import { useContactStore } from '@/src/store/useContactStore';
+import { SelectedContactsList } from '@/src/components/contact/SelectedContactsList';
+import { DOCUMENT_STATUSES, DocumentStatus } from '@/src/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useEffect, useState } from 'react';
@@ -21,7 +24,6 @@ interface DocumentFormProps {
 	onSave: (data: any) => Promise<void>;
 	onCancel: () => void;
 	title: string;
-	contacts: Contact[];
 }
 
 export const DocumentForm = ({
@@ -29,8 +31,10 @@ export const DocumentForm = ({
 	onSave,
 	onCancel,
 	title,
-	contacts,
 }: DocumentFormProps) => {
+	const router = useRouter();
+
+	const { tempSelectedIds, setTempSelectedIds } = useContactStore();
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 
 	const [documentNumber, setDocumentNumber] = useState('');
@@ -42,8 +46,6 @@ export const DocumentForm = ({
 	const [fileUri, setFileUri] = useState<string | null>(null);
 	const [fileName, setFileName] = useState<string | null>(null);
 	const [notes, setNotes] = useState('');
-
-	const [selectedContactIds, setSelectedContactIds] = useState<number[]>([]);
 
 	useEffect(() => {
 		if (initialData) {
@@ -58,7 +60,8 @@ export const DocumentForm = ({
 				initialData.file_uri ? initialData.file_uri.split('/').pop() : null,
 			);
 			setNotes(initialData.notes || '');
-			setSelectedContactIds(initialData.contactIds || []);
+
+			setTempSelectedIds(initialData.contactIds || []);
 		} else {
 			setDocumentNumber('');
 			setStartDate('');
@@ -69,14 +72,30 @@ export const DocumentForm = ({
 			setFileUri(null);
 			setFileName(null);
 			setNotes('');
-			setSelectedContactIds([]);
+
+			setTempSelectedIds([]);
 		}
-	}, [initialData]);
+	}, [initialData, setTempSelectedIds]);
 
 	const getInputStyle = (fieldName: string) => [
 		styles.input,
 		focusedField === fieldName && styles.inputFocused,
 	];
+
+	const getStatusColor = (statusName: string) => {
+		switch (statusName) {
+			case 'Действующий':
+				return colors.success;
+			case 'Приостановлен':
+				return colors.warning;
+			case 'Расторгнут':
+				return colors.error;
+			case 'Завершен':
+				return colors.neutral;
+			default:
+				return colors.primary;
+		}
+	};
 
 	const pickDocument = async () => {
 		try {
@@ -99,12 +118,8 @@ export const DocumentForm = ({
 		}
 	};
 
-	const toggleContact = (contactId: number) => {
-		setSelectedContactIds((prev) =>
-			prev.includes(contactId)
-				? prev.filter((id) => id !== contactId)
-				: [...prev, contactId],
-		);
+	const removeContact = (id: number) => {
+		setTempSelectedIds(tempSelectedIds.filter((cId) => cId !== id));
 	};
 
 	const handleSave = async () => {
@@ -138,7 +153,7 @@ export const DocumentForm = ({
 			status,
 			file_uri: fileUri || undefined,
 			notes: notes.trim() || undefined,
-			contactIds: selectedContactIds,
+			contactIds: tempSelectedIds,
 		};
 
 		try {
@@ -175,7 +190,7 @@ export const DocumentForm = ({
 								style={getInputStyle('documentNumber')}
 								value={documentNumber}
 								onChangeText={setDocumentNumber}
-								placeholder='Например, № 123-А'
+								placeholder='Например, 123-А'
 								placeholderTextColor={colors.textSecondary}
 								onFocus={() => setFocusedField('documentNumber')}
 								onBlur={() => setFocusedField(null)}
@@ -243,25 +258,33 @@ export const DocumentForm = ({
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Статус договора</Text>
 						<View style={styles.dropdown}>
-							{DOCUMENT_STATUSES.map((item) => (
-								<TouchableOpacity
-									key={item}
-									style={[
-										styles.dropdownItem,
-										status === item && styles.dropdownItemActive,
-									]}
-									onPress={() => setStatus(item)}
-								>
-									<Text
+							{DOCUMENT_STATUSES.map((item) => {
+								const isActive = status === item;
+								const itemColor = getStatusColor(item);
+
+								return (
+									<TouchableOpacity
+										key={item}
 										style={[
-											styles.dropdownItemText,
-											status === item && styles.dropdownItemTextActive,
+											styles.dropdownItem,
+											isActive && {
+												borderColor: itemColor,
+												backgroundColor: itemColor + '15',
+											},
 										]}
+										onPress={() => setStatus(item)}
 									>
-										{item}
-									</Text>
-								</TouchableOpacity>
-							))}
+										<Text
+											style={[
+												styles.dropdownItemText,
+												isActive && { color: itemColor, fontWeight: '600' },
+											]}
+										>
+											{item}
+										</Text>
+									</TouchableOpacity>
+								);
+							})}
 						</View>
 					</View>
 
@@ -293,43 +316,14 @@ export const DocumentForm = ({
 						)}
 					</View>
 
-					{contacts.length > 0 && (
-						<View style={styles.section}>
-							<Text style={styles.sectionTitle}>Привязать к контактам</Text>
-							<ScrollView
-								horizontal
-								showsHorizontalScrollIndicator={false}
-								contentContainerStyle={styles.dropdown}
-							>
-								{contacts.map((contact) => {
-									const isSelected = selectedContactIds.includes(contact.id);
-									const fullName =
-										`${contact.first_name} ${contact.last_name || ''}`.trim();
-									return (
-										<TouchableOpacity
-											key={contact.id}
-											style={[
-												styles.dropdownItem,
-												isSelected && styles.dropdownItemActive,
-											]}
-											onPress={() => toggleContact(contact.id)}
-										>
-											<Text
-												style={[
-													styles.dropdownItemText,
-													isSelected && styles.dropdownItemTextActive,
-												]}
-											>
-												{contact.company
-													? `[${contact.company}] ${fullName}`
-													: fullName}
-											</Text>
-										</TouchableOpacity>
-									);
-								})}
-							</ScrollView>
-						</View>
-					)}
+					<View style={styles.section}>
+						<Text style={styles.sectionTitle}>Привязанные контакты</Text>
+						<SelectedContactsList
+							selectedIds={tempSelectedIds}
+							onRemove={removeContact}
+							onAddPress={() => router.push('/document/select-contacts')}
+						/>
+					</View>
 
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Примечания</Text>

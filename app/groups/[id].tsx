@@ -94,6 +94,7 @@ export default function EditGroupScreen() {
 				<SelectedContactsList
 					selectedIds={tempSelectedIds}
 					onRemove={removeContact}
+					onAddPress={() => router.push('/groups/select-contacts')}
 				/>
 
 				<TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>

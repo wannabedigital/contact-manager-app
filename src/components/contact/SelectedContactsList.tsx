@@ -1,7 +1,6 @@
 import { colors } from '@/src/constants/colors';
 import { useContactStore } from '@/src/store/useContactStore';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
 	ScrollView,
@@ -14,11 +13,13 @@ import {
 interface SelectedContactsListProps {
 	selectedIds: number[];
 	onRemove: (id: number) => void;
+	onAddPress: () => void;
 }
 
 export const SelectedContactsList = ({
 	selectedIds,
 	onRemove,
+	onAddPress,
 }: SelectedContactsListProps) => {
 	const { contacts } = useContactStore();
 	const [chipToDelete, setChipToDelete] = useState<number | null>(null);
@@ -66,10 +67,7 @@ export const SelectedContactsList = ({
 				</ScrollView>
 			)}
 
-			<TouchableOpacity
-				style={styles.addButton}
-				onPress={() => router.push('/groups/select-contacts')}
-			>
+			<TouchableOpacity style={styles.addButton} onPress={onAddPress}>
 				<Ionicons name='add-circle-outline' size={20} color={colors.primary} />
 				<Text style={styles.addButtonText}>Добавить контакты</Text>
 			</TouchableOpacity>

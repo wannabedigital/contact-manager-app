@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export default function NewDocumentScreen() {
 	const router = useRouter();
 	const { addDocument } = useDocumentStore();
-	const { contacts, loadContacts } = useContactStore();
+	const { loadContacts } = useContactStore();
 
 	useEffect(() => {
 		loadContacts();
@@ -21,7 +21,6 @@ export default function NewDocumentScreen() {
 	return (
 		<DocumentForm
 			title='Новый договор'
-			contacts={contacts}
 			onSave={handleSave}
 			onCancel={() => router.back()}
 		/>

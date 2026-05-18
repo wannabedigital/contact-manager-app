@@ -211,58 +211,129 @@ export const contactRepo = {
 			}
 
 			if (phones) {
-				await db.runAsync(
-					'DELETE FROM contact_phones WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_phones WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+
+				const incomingIds = phones
+					.map((p) => p.id)
+					.filter((pId): pId is number => pId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
+				for (const delId of idsToDelete) {
+					await db.runAsync('DELETE FROM contact_phones WHERE id = ?', delId);
+				}
+
 				for (const p of phones) {
-					await db.runAsync(
-						'INSERT INTO contact_phones (contact_id, phone_number, type) VALUES (?, ?, ?)',
-						id,
-						p.phone_number,
-						p.type,
-					);
+					if (p.id) {
+						await db.runAsync(
+							'UPDATE contact_phones SET phone_number = ?, type = ? WHERE id = ?',
+							p.phone_number,
+							p.type,
+							p.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_phones (contact_id, phone_number, type) VALUES (?, ?, ?)',
+							id,
+							p.phone_number,
+							p.type,
+						);
+					}
 				}
 			}
+
 			if (emails) {
-				await db.runAsync(
-					'DELETE FROM contact_emails WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_emails WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+				const incomingIds = emails
+					.map((e) => e.id)
+					.filter((eId): eId is number => eId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
+				for (const delId of idsToDelete) {
+					await db.runAsync('DELETE FROM contact_emails WHERE id = ?', delId);
+				}
+
 				for (const e of emails) {
-					await db.runAsync(
-						'INSERT INTO contact_emails (contact_id, email_address, type) VALUES (?, ?, ?)',
-						id,
-						e.email_address,
-						e.type,
-					);
+					if (e.id) {
+						await db.runAsync(
+							'UPDATE contact_emails SET email_address = ?, type = ? WHERE id = ?',
+							e.email_address,
+							e.type,
+							e.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_emails (contact_id, email_address, type) VALUES (?, ?, ?)',
+							id,
+							e.email_address,
+							e.type,
+						);
+					}
 				}
 			}
+
 			if (addresses) {
-				await db.runAsync(
-					'DELETE FROM contact_addresses WHERE contact_id = ?',
+				const existingRecords = (await db.getAllAsync(
+					'SELECT id FROM contact_addresses WHERE contact_id = ?',
 					id,
+				)) as { id: number }[];
+				const existingIds = existingRecords.map((r) => r.id);
+				const incomingIds = addresses
+					.map((a) => a.id)
+					.filter((aId): aId is number => aId !== undefined);
+
+				const idsToDelete = existingIds.filter(
+					(eId) => !incomingIds.includes(eId),
 				);
-				for (const a of addresses) {
+				for (const delId of idsToDelete) {
 					await db.runAsync(
-						'INSERT INTO contact_addresses (contact_id, address, type) VALUES (?, ?, ?)',
-						id,
-						a.address,
-						a.type,
+						'DELETE FROM contact_addresses WHERE id = ?',
+						delId,
 					);
 				}
+
+				for (const a of addresses) {
+					if (a.id) {
+						await db.runAsync(
+							'UPDATE contact_addresses SET address = ?, type = ? WHERE id = ?',
+							a.address,
+							a.type,
+							a.id,
+						);
+					} else {
+						await db.runAsync(
+							'INSERT INTO contact_addresses (contact_id, address, type) VALUES (?, ?, ?)',
+							id,
+							a.address,
+							a.type,
+						);
+					}
+				}
 			}
+
 			if (groupIds) {
 				await db.runAsync(
 					'DELETE FROM contact_groups WHERE contact_id = ?',
 					id,
 				);
-				for (const gId of groupIds)
+				for (const gId of groupIds) {
 					await db.runAsync(
 						'INSERT INTO contact_groups (contact_id, group_id) VALUES (?, ?)',
 						id,
 						gId,
 					);
+				}
 			}
 		});
 	},

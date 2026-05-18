@@ -11,35 +11,27 @@ import {
 export const contactRepo = {
 	async getAll(): Promise<Contact[]> {
 		const db = await getDatabase();
+
 		const contacts = (await db.getAllAsync(
 			'SELECT * FROM contacts ORDER BY first_name, last_name',
 		)) as Contact[];
 
 		if (contacts.length === 0) return [];
 
-		const contactIds = contacts.map((c) => c.id);
-
 		const phones = (await db.getAllAsync(
-			`SELECT * FROM contact_phones WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_phones',
 		)) as Phone[];
-
 		const emails = (await db.getAllAsync(
-			`SELECT * FROM contact_emails WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_emails',
 		)) as Email[];
-
 		const addresses = (await db.getAllAsync(
-			`SELECT * FROM contact_addresses WHERE contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			'SELECT * FROM contact_addresses',
 		)) as Address[];
 
 		const groupsRaw = (await db.getAllAsync(
-			`SELECT cg.contact_id, g.id, g.name, g.created_at
-           FROM contact_groups cg
-           JOIN groups g ON cg.group_id = g.id
-           WHERE cg.contact_id IN (${contactIds.map(() => '?').join(',')})`,
-			...contactIds,
+			`SELECT cg.contact_id, g.id, g.name, g.sort_order, g.created_at
+	         FROM contact_groups cg
+	         JOIN groups g ON cg.group_id = g.id`,
 		)) as (Group & { contact_id: number })[];
 
 		const phonesMap = new Map<number, Phone[]>();
@@ -63,16 +55,13 @@ export const contactRepo = {
 		const groupsMap = new Map<number, Group[]>();
 		groupsRaw.forEach((g) => {
 			if (!groupsMap.has(g.contact_id)) groupsMap.set(g.contact_id, []);
-			groupsMap
-				.get(g.contact_id)!
-				.push({
-					id: g.id,
-					name: g.name,
-					sort_order: g.sort_order,
-					created_at: g.created_at,
-				});
+			groupsMap.get(g.contact_id)!.push({
+				id: g.id,
+				name: g.name,
+				sort_order: g.sort_order,
+				created_at: g.created_at,
+			});
 		});
-
 		return contacts.map((c) => ({
 			...c,
 			phones: phonesMap.get(c.id) || [],
